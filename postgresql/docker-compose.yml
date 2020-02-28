@@ -1,0 +1,32 @@
+version: "3.7"
+services:
+  db:
+    image: postgresql-base:latest
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=course
+      - POSTGRES_PASSWORD=course
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - pgconf:/etc/postgresql
+      - pglog:/var/log/postgresql
+  dbadmin:
+    image: dpage/pgadmin4
+    ports:
+      - "15432:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: "admin@course.org"
+      PGADMIN_DEFAULT_PASSWORD: "course2019"
+    depends_on:
+        - db
+volumes:
+  pgdata:
+    driver: local
+  pgconf:
+    driver: local
+  pglog: 
+    driver: local
+
+
+  

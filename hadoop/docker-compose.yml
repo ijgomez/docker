@@ -1,0 +1,9 @@
+version: "3.7"
+services:
+  namenode:
+    image: hadoop-master:latest
+    
+  datanode:
+    image: hadoop-slave:latest
+    depends_on:
+      - namenode
