@@ -1,8 +1,8 @@
 FROM openjdk:8-jdk-alpine
 
 RUN apk -U update && \
-    apk add bash curl wget && \
-    apk upgrade 
+    apk add bash curl openssh-client wget openssl supervisor && \
+    apk upgrade
 
 ENV HADOOP_VERSION 2.7.7
 
