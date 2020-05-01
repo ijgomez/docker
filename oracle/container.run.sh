@@ -1,3 +1,3 @@
 #!/bin/bash
-docker run -d -it --name ora122 -P --env-file ora.conf container-registry.oracle.com/database/enterprise:12.2.0.1
+docker run -d -it --name oracle-db -P --env-file ora.conf container-registry.oracle.com/database/enterprise:12.2.0.1
 
