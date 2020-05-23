@@ -1,0 +1,8 @@
+version: "3.7"
+services:
+  wildfly-standalone:
+    image: wildfly-base:latest
+    ports:
+      - "8080:8080"
+      - "9990:9990"
+    
