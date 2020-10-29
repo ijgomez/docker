@@ -1,16 +1,18 @@
 version: "3.7"
 services:
   db:
-    image: postgresql-base:latest
+    image: mysql-base:latest
     ports:
-      - "5432:5432"
+      - "3306:3306"
     environment:
-      - POSTGRES_USER=course
-      - POSTGRES_PASSWORD=course
+      - MYSQL_ROOT_PASSWORD: secret
+      - MYSQL_DATABASE: demodatabase
+      - MYSQL_USER: root
+      - MYSQL_PASSWORD: usersecret
     volumes:
-      - pgdata:/var/lib/postgresql/data
-      - pgconf:/etc/postgresql
-      - pglog:/var/log/postgresql
+      - dbdata:/var/lib/mysql
+      - dbconf:/etc/mysql/conf.d
+      - dblog:/var/log/mysql
   dbadmin:
     image: dpage/pgadmin4
     ports:
@@ -21,11 +23,11 @@ services:
     depends_on:
         - db
 volumes:
-  pgdata:
+  dbdata:
     driver: local
-  pgconf:
+  dbconf:
     driver: local
-  pglog: 
+  dblog: 
     driver: local
 
 
