@@ -3,9 +3,14 @@ set -e
 
 echo Create Grants.
 
-psql -v ON_ERROR_STOP=1 --username "template_admin" --password "template_admin" --dbname "template" <<-EOSQL
+psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
 
     GRANT template TO template_admin WITH ADMIN OPTION;
+    GRANT support TO support_admin WITH ADMIN OPTION;
+
+EOSQL
+
+psql -v ON_ERROR_STOP=1 --username "template_admin" --password "template_admin" --dbname "template" <<-EOSQL
 
     GRANT ALL ON SCHEMA template TO template_admin;
     GRANT USAGE ON SCHEMA template TO template_user;
@@ -18,8 +23,6 @@ psql -v ON_ERROR_STOP=1 --username "template_admin" --password "template_admin" 
 EOSQL
 
 psql -v ON_ERROR_STOP=1 --username "support_admin" --password "support_admin" --dbname "support" <<-EOSQL
-
-    GRANT support TO support_admin WITH ADMIN OPTION;
 
     GRANT ALL ON SCHEMA support TO support_admin;
     GRANT USAGE ON SCHEMA support TO support_user;
