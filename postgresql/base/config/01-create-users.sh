@@ -10,4 +10,7 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-E
     CREATE USER support_admin with encrypted password 'support_admin';
     CREATE USER support_user with encrypted password 'support_user';
 
+    CREATE GROUP template WITH USER template_admin, template_user;
+    CREATE GROUP support WITH USER support_admin, support_user;
+
 EOSQL
