@@ -11,6 +11,7 @@ services:
       - POSTGRES_USER=administrator
       - POSTGRES_PASSWORD=docker2022
       - PGDATA=/var/lib/postgresql/data/pgdata
+      - TZ=UTC
     volumes:
       - pgdata:/var/lib/postgresql/data
       - pgconf:/etc/postgresql
