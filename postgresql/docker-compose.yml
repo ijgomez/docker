@@ -1,6 +1,6 @@
 version: "3.7"
 services:
-  db:
+  database:
     image: postgresql-base:latest
     container_name: database
     hostname: database
@@ -27,7 +27,7 @@ services:
     volumes:
       - pgadmin:/var/lib/pgadmin
     depends_on:
-        - db
+        - database
 volumes:
   pgdata:
     driver: local

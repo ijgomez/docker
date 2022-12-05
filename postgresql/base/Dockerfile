@@ -15,10 +15,8 @@ ENV LANG es_ES.UTF-8
 ENV LANGUAGE es_ES:es
 ENV LC_ALL es_ES.UTF-8
 
-
-# COPY init.sql /docker-entrypoint-initdb.d/
-
-# COPY init-user-db.sh /docker-entrypoint-initdb.d/
-
-# COPY init-user-template-db.sh /docker-entrypoint-initdb.d/
-# COPY init-user-support-db.sh /docker-entrypoint-initdb.d/
+COPY ./config/01-create-users.sh /docker-entrypoint-initdb.d/
+COPY ./config/02-create-tablespaces.sh /docker-entrypoint-initdb.d/
+COPY ./config/03-create-databases.sh /docker-entrypoint-initdb.d/
+COPY ./config/04-create-schemas.sh /docker-entrypoint-initdb.d/
+COPY ./config/05-create-grants.sh /docker-entrypoint-initdb.d/
