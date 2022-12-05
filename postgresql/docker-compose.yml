@@ -2,22 +2,30 @@ version: "3.7"
 services:
   db:
     image: postgresql-base:latest
+    container_name: database
+    hostname: database
+    restart: always
     ports:
       - "5432:5432"
     environment:
-      - POSTGRES_USER=course
-      - POSTGRES_PASSWORD=course
+      - POSTGRES_USER=administrator
+      - POSTGRES_PASSWORD=docker2022
+      - PGDATA=/var/lib/postgresql/data/pgdata
     volumes:
       - pgdata:/var/lib/postgresql/data
       - pgconf:/etc/postgresql
       - pglog:/var/log/postgresql
   dbadmin:
     image: dpage/pgadmin4
+    container_name: database-admin
+    hostname: database-admin
     ports:
       - "15432:80"
     environment:
-      PGADMIN_DEFAULT_EMAIL: "admin@course.org"
-      PGADMIN_DEFAULT_PASSWORD: "course2019"
+      PGADMIN_DEFAULT_EMAIL: "administrator@docker.org"
+      PGADMIN_DEFAULT_PASSWORD: "docker2022"
+    volumes:
+      - pgadmin:/var/lib/pgadmin
     depends_on:
         - db
 volumes:
@@ -26,6 +34,8 @@ volumes:
   pgconf:
     driver: local
   pglog: 
+    driver: local
+  pgadmin: 
     driver: local
 
 
