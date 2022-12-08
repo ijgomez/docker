@@ -1,0 +1,11 @@
+version: "3.7"
+services:
+  # Application Server
+  app-server:
+    image: tomcat-base:latest
+    container_name: tomcat-server
+    hostname: tomcat-server
+    ports:
+      - "8080:8080"
+      - "8443:8443"
+    
