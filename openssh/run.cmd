@@ -1,1 +1,0 @@
-docker run -it --entrypoint /bin/ash alpine/openssl:latest
