@@ -1,1 +1,1 @@
-docker run -it --name openssl -v .:/workspace --entrypoint /bin/ash openssl-base:latest
+docker run -it --name openssl -v ssl:/workspace --entrypoint /bin/ash openssl-base:latest
