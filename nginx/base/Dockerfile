@@ -8,3 +8,4 @@ COPY ./config/localhost.key /etc/ssl/private/localhost.key
 EXPOSE 80
 EXPOSE 443
 
+VOLUME [ "/var/log/nginx" ]

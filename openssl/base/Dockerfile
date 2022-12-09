@@ -4,4 +4,6 @@ RUN mkdir /workspace
 
 VOLUME [ "/workspace" ]
 
+WORKDIR /workspace
+
 
