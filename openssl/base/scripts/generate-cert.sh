@@ -7,3 +7,5 @@ openssl req -new -config certificate.conf -key certificate-private-key.pem -out 
 openssl x509 -req -in csr.pem -CA ca-certificate.pem -CAkey ca-private-key.pem -CAcreateserial -out certificate.pem -days 3650 -extfile certificate-ext.conf
 
 echo "Your certificate is generated"
+
+openssl x509 -outform der -in certificate.pem -out certificate.crt
