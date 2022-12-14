@@ -47,7 +47,7 @@ RUN mkdir $APP_DIR/tomcat/conf/ssl
 RUN /usr/bin/keytool -genkeypair -keystore $APP_DIR/tomcat/conf/ssl/server.keystore -storepass changeit -alias tomcat -dname 'cn=tomcat-base' -keypass changeit -validity 3600 -keyalg RSA
 
 ## Environment Settings
-ENV CATALINA_OPTS="-Xms1G -Xmx1G -Duser.timezone=UTC -Duser.language=es -Duser.region=ES -Dfile.encoding=UTF-8"
+ENV CATALINA_OPTS="-Xms1G -Xmx1G -Duser.timezone=UTC -Duser.language=es -Duser.region=ES -Dfile.encoding=UTF-8 -Djavax.net.debug=all"
 
 ## Remove examples and docs
 RUN rm -rf $APP_DIR/tomcat/webapps/examples
