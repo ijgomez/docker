@@ -42,9 +42,24 @@ COPY ./config/context.xml $APP_DIR/tomcat/conf/context.xml
 COPY ./config/context-manager.xml $APP_DIR/tomcat/webapps/manager/META-INF/context.xml
 COPY ./config/context-manager.xml $APP_DIR/tomcat/webapps/host-manager/META-INF/context.xml
 
-## Generate keystore and truststore
+## Generate keystore and truststore 
 RUN mkdir $APP_DIR/tomcat/conf/ssl
-RUN /usr/bin/keytool -genkeypair -keystore $APP_DIR/tomcat/conf/ssl/server.keystore -storepass changeit -alias tomcat -dname 'cn=tomcat-base' -keypass changeit -validity 3600 -keyalg RSA
+
+## RUN /usr/bin/keytool -genkeypair -keystore $APP_DIR/tomcat/conf/ssl/server.keystore -storepass changeit -alias tomcat -dname 'cn=tomcat-base' -keypass changeit -validity 3600 -keyalg RSA
+
+## (https://blogs.oracle.com/blogbypuneeth/post/create-an-internal-certification-authority-ca-using-keytool-and-sign-your-server-certificate)
+RUN /usr/bin/keytool -alias root -dname 'cn=RootCA, ou=Root_CertificateAuthority, o=CertificateAuthority, c=IN' -genkeypair -storepass password -keyalg RSA
+RUN /usr/bin/keytool -alias intermediate -dname "cn=IntermediateCA, ou=Intermediate_CertificateAuthority, o=CertificateAuthority, c=IN" -genkeypair -storepass password -keyalg RSA
+RUN /usr/bin/keytool -alias server -dname "cn=localhost, ou=Java, o=Oracle, c=IN" -genkeypair -storepass password -keyalg RSA -keystore $APP_DIR/tomcat/conf/ssl/identity.jks
+
+RUN /usr/bin/keytool -alias intermediate -certreq -storepass password -keyalg RSA | keytool -alias root -gencert -ext san=dns:intermediate -storepass password -keyalg RSA | keytool -alias intermediate -importcert -storepass password -keyalg RSA
+
+RUN /usr/bin/keytool -export -alias root -storepass password | keytool -import -alias root -keystore $APP_DIR/tomcat/conf/ssl/identity.jks -storepass password -noprompt -trustcacerts
+
+RUN /usr/bin/keytool -alias server -certreq -storepass password -keyalg RSA -keystore $APP_DIR/tomcat/conf/ssl/identity.jks | keytool -alias intermediate -gencert -storepass password -keyalg RSA | keytool -alias server -importcert -storepass password -keyalg RSA -keystore $APP_DIR/tomcat/conf/ssl/identity.jks -noprompt -trustcacerts 
+
+RUN /usr/bin/keytool -export -alias intermediate -storepass password | keytool -import -alias intermediate -keystore $APP_DIR/tomcat/conf/ssl/trust.jks -storepass password -trustcacerts -noprompt
+RUN /usr/bin/keytool -export -alias root -storepass password | keytool -import -alias root -keystore $APP_DIR/tomcat/conf/ssl/trust.jks -storepass password -trustcacerts -noprompt
 
 ## Environment Settings
 ENV CATALINA_OPTS="-Xms1G -Xmx1G -Duser.timezone=UTC -Duser.language=es -Duser.region=ES -Dfile.encoding=UTF-8 -Djavax.net.debug=all"

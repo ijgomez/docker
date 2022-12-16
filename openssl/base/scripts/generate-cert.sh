@@ -9,3 +9,5 @@ openssl x509 -req -in csr.pem -CA ca-certificate.pem -CAkey ca-private-key.pem -
 echo "Your certificate is generated"
 
 openssl x509 -outform der -in certificate.pem -out certificate.crt
+
+openssl x509 -outform der -in certificate.pem -out certificate.der

@@ -105,7 +105,8 @@
     <Connector protocol="org.apache.coyote.http11.Http11NioProtocol"
            port="8443" maxThreads="200"
            scheme="https" secure="true" SSLEnabled="true"
-           keystoreFile="conf/ssl/server.keystore" keystorePass="changeit"
+           keystoreFile="conf/ssl/identity.jks" keystorePass="password" keyAlias="server"
+           truststoreFile="conf/ssl/trust.jks" truststorePass="password"
            clientAuth="false" sslProtocol="TLS"/>                 
     <!-- Define an SSL/TLS HTTP/1.1 Connector on port 8443 with HTTP/2
          This connector uses the APR/native implementation which always uses
