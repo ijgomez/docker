@@ -1,0 +1,11 @@
+version: "3.7"
+services:
+  # Application Server
+  app-server:
+    image: apache-base:latest
+    container_name: apache-server
+    hostname: apache-server
+    ports:
+      - "8080:80"
+      - "8443:443"
+    
