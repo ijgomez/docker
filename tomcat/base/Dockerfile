@@ -4,6 +4,10 @@ ENV USER tomcat
 ENV HOME /home/$USER
 ENV APP_DIR /apps
 
+ENV TOMCAT_V 9
+ENV TOMCAT_VERSION 9.0.70
+ENV PG_DRIVER_VERSION 42.3.3
+
 USER root
 
 ## Update Operative System
@@ -22,16 +26,16 @@ RUN apk fetch openjdk12
 RUN apk add openjdk12
 
 ## Download tomcat 9
-RUN wget https://downloads.apache.org/tomcat/tomcat-9/v9.0.70/bin/apache-tomcat-9.0.70.tar.gz
+RUN wget https://downloads.apache.org/tomcat/tomcat-$TOMCAT_V/v$TOMCAT_VERSION/bin/apache-tomcat-$TOMCAT_VERSION.tar.gz
 
 ## Install tomcat
 RUN mkdir $APP_DIR
-RUN tar -zxvf /tmp/apache-tomcat-9.0.70.tar.gz -C $APP_DIR
-RUN cd $APP_DIR && mv apache-tomcat-9.0.70 tomcat
+RUN tar -zxvf /tmp/apache-tomcat-$TOMCAT_VERSION.tar.gz -C $APP_DIR
+RUN cd $APP_DIR && mv apache-tomcat-$TOMCAT_VERSION tomcat
 
 ## Driver PostgreSQL
-RUN wget https://jdbc.postgresql.org/download/postgresql-42.3.3.jar
-RUN mv /tmp/postgresql-42.3.3.jar $APP_DIR/tomcat/lib
+RUN wget https://jdbc.postgresql.org/download/postgresql-$PG_DRIVER_VERSION.jar
+RUN mv /tmp/postgresql-$PG_DRIVER_VERSION.jar $APP_DIR/tomcat/lib
 
 ## Copy file confg
 COPY ./config/server.xml $APP_DIR/tomcat/conf/server.xml
@@ -50,7 +54,8 @@ RUN mkdir $APP_DIR/tomcat/conf/ssl
 ## (https://blogs.oracle.com/blogbypuneeth/post/create-an-internal-certification-authority-ca-using-keytool-and-sign-your-server-certificate)
 RUN /usr/bin/keytool -alias root -dname 'cn=RootCA, ou=Root_CertificateAuthority, o=CertificateAuthority, c=IN' -genkeypair -storepass password -keyalg RSA
 RUN /usr/bin/keytool -alias intermediate -dname "cn=IntermediateCA, ou=Intermediate_CertificateAuthority, o=CertificateAuthority, c=IN" -genkeypair -storepass password -keyalg RSA
-RUN /usr/bin/keytool -alias server -dname "cn=localhost, ou=Java, o=Oracle, c=IN" -genkeypair -storepass password -keyalg RSA -keystore $APP_DIR/tomcat/conf/ssl/identity.jks
+RUN /usr/bin/keytool -alias server -dname "cn=localhost, ou=Java, o=Oracle, c=IN" -genkeypair -storepass password -keyalg RSA -ext san=ip:127.0.0.1,dns:localhost -keystore $APP_DIR/tomcat/conf/ssl/identity.jks
+
 
 RUN /usr/bin/keytool -alias intermediate -certreq -storepass password -keyalg RSA | keytool -alias root -gencert -ext san=dns:intermediate -storepass password -keyalg RSA | keytool -alias intermediate -importcert -storepass password -keyalg RSA
 
