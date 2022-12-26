@@ -4,9 +4,8 @@ ENV USER tomcat
 ENV HOME /home/$USER
 ENV APP_DIR /apps
 
-ENV TOMCAT_V 9
-ENV TOMCAT_VERSION 9.0.70
-ENV PG_DRIVER_VERSION 42.3.3
+ENV TOMCAT_VERSION 10
+ENV TOMCAT_VRS 10.1.4
 
 USER root
 
@@ -22,16 +21,16 @@ RUN adduser -D $USER \
 WORKDIR /tmp
 
 ## Install openjdk alpine
-RUN apk fetch openjdk12
-RUN apk add openjdk12
+RUN apk fetch openjdk17
+RUN apk add openjdk17
 
-## Download tomcat 9
-RUN wget https://downloads.apache.org/tomcat/tomcat-$TOMCAT_V/v$TOMCAT_VERSION/bin/apache-tomcat-$TOMCAT_VERSION.tar.gz
+## Download tomcat
+RUN wget https://downloads.apache.org/tomcat/tomcat-$TOMCAT_VERSION/v$TOMCAT_VRS/bin/apache-tomcat-$TOMCAT_VRS.tar.gz
 
 ## Install tomcat
 RUN mkdir $APP_DIR
-RUN tar -zxvf /tmp/apache-tomcat-$TOMCAT_VERSION.tar.gz -C $APP_DIR
-RUN cd $APP_DIR && mv apache-tomcat-$TOMCAT_VERSION tomcat
+RUN tar -zxvf /tmp/apache-tomcat-$TOMCAT_VRS.tar.gz -C $APP_DIR
+RUN cd $APP_DIR && mv apache-tomcat-$TOMCAT_VRS tomcat
 
 ## Driver PostgreSQL
 RUN wget https://jdbc.postgresql.org/download/postgresql-$PG_DRIVER_VERSION.jar
@@ -67,7 +66,7 @@ RUN /usr/bin/keytool -export -alias intermediate -storepass password | keytool -
 RUN /usr/bin/keytool -export -alias root -storepass password | keytool -import -alias root -keystore $APP_DIR/tomcat/conf/ssl/trust.jks -storepass password -trustcacerts -noprompt
 
 ## Environment Settings
-ENV CATALINA_OPTS="-Xms1G -Xmx1G -Duser.timezone=UTC -Duser.language=es -Duser.region=ES -Dfile.encoding=UTF-8 -Djavax.net.debug=all"
+ENV CATALINA_OPTS="-Xms1G -Xmx1G -Duser.timezone=UTC -Duser.language=en -Duser.region=EN -Dfile.encoding=UTF-8 -Djavax.net.debug=all"
 
 ## Remove examples and docs
 RUN rm -rf $APP_DIR/tomcat/webapps/examples
