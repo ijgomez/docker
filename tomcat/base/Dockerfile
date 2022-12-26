@@ -7,6 +7,8 @@ ENV APP_DIR /apps
 ENV TOMCAT_VERSION 10
 ENV TOMCAT_VRS 10.1.4
 
+ENV PG_DRIVER_VERSION 42.5.1
+
 USER root
 
 ## Update Operative System
