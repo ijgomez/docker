@@ -1,4 +1,4 @@
 #!/bin/bash
 set -e
 
-docker-compose start
+docker compose start

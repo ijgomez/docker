@@ -1,13 +1,13 @@
 FROM alpine:latest
 
-ENV USER tomcat
-ENV HOME /home/$USER
-ENV APP_DIR /apps
+ENV USER=tomcat
+ENV HOME=/home/$USER
+ENV APP_DIR=/apps
 
-ENV TOMCAT_VERSION 10
-ENV TOMCAT_VRS 10.1.4
+ENV TOMCAT_VERSION=10
+ENV TOMCAT_VRS=10.1.43
 
-ENV PG_DRIVER_VERSION 42.5.1
+ENV PG_DRIVER_VERSION=42.7.7
 
 USER root
 
@@ -55,7 +55,7 @@ RUN mkdir $APP_DIR/tomcat/conf/ssl
 ## (https://blogs.oracle.com/blogbypuneeth/post/create-an-internal-certification-authority-ca-using-keytool-and-sign-your-server-certificate)
 RUN /usr/bin/keytool -alias root -dname 'cn=RootCA, ou=Root_CertificateAuthority, o=CertificateAuthority, c=IN' -genkeypair -storepass password -keyalg RSA
 RUN /usr/bin/keytool -alias intermediate -dname "cn=IntermediateCA, ou=Intermediate_CertificateAuthority, o=CertificateAuthority, c=IN" -genkeypair -storepass password -keyalg RSA
-RUN /usr/bin/keytool -alias server -dname "cn=localhost, ou=Java, o=Oracle, c=IN" -genkeypair -storepass password -keyalg RSA -ext san=ip:127.0.0.1,dns:localhost -keystore $APP_DIR/tomcat/conf/ssl/identity.jks
+RUN /usr/bin/keytool -alias server -dname "cn=tomcat-server" -genkeypair -storepass password -keyalg RSA -ext san=dns:tomcat-server -keystore $APP_DIR/tomcat/conf/ssl/identity.jks
 
 
 RUN /usr/bin/keytool -alias intermediate -certreq -storepass password -keyalg RSA | keytool -alias root -gencert -ext san=dns:intermediate -storepass password -keyalg RSA | keytool -alias intermediate -importcert -storepass password -keyalg RSA
@@ -92,4 +92,4 @@ EXPOSE 8443
 VOLUME $APP_DIR/tomcat/logs
 
 ## Start tomcat
-CMD sh $APP_DIR/tomcat/bin/catalina.sh start && tail -f $APP_DIR/tomcat/logs/catalina.out
+CMD ["sh", "-c", "/apps/tomcat/bin/catalina.sh start && tail -f /apps/tomcat/logs/catalina.out"]

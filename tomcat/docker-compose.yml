@@ -1,4 +1,3 @@
-version: "3.7"
 services:
   # Application Server
   app-server:
@@ -10,4 +9,6 @@ services:
       - "8443:8443"
     volumes:
       - tomcat_log:/apps/tomcat/logs
-    
+volumes:
+  tomcat_log:
+    driver: local
