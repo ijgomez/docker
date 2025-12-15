@@ -54,7 +54,7 @@ if [ -f "$PG_JAR" ]; then
 
   if ! "$JBOSS_HOME/bin/jboss-cli.sh" --connect --commands="/subsystem=datasources/data-source=${DS_NAME}:read-resource" >/dev/null 2>&1; then
     echo "[entrypoint] Datasource ${DS_NAME} no existe. Creando apuntando a ${DB_HOST}/${DB_NAME}..."
-    CMD_ADD_DS="/subsystem=datasources/data-source=${DS_NAME}:add(jndi-name=${JNDI_NAME},driver-name=postgresql,connection-url=jdbc:postgresql://${DB_HOST}:5432/${DB_NAME},user-name=${DB_USER},password=${DB_PASS},max-pool-size=20,min-pool-size=1,enabled=true)"
+    CMD_ADD_DS="/subsystem=datasources/data-source=${DS_NAME}:add(jndi-name=${JNDI_NAME},driver-name=postgresql,connection-url=jdbc:postgresql://${DB_HOST}:5432/${DB_NAME},user-name=${DB_USER},password=${DB_PASS},max-pool-size=20,min-pool-size=1,enabled=true,background-validation=true,background-validation-millis=30000,check-valid-connection-sql='SELECT 1',valid-connection-checker-class-name=org.jboss.jca.adapters.jdbc.extensions.postgres.PostgreSQLValidConnectionChecker,exception-sorter-class-name=org.jboss.jca.adapters.jdbc.extensions.postgres.PostgreSQLExceptionSorter)"
     "$JBOSS_HOME/bin/jboss-cli.sh" --connect --commands="$CMD_ADD_DS" || true
     echo "[entrypoint] Datasource ${DS_NAME} creado (o ya existía)."
   else

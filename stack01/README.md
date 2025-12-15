@@ -114,6 +114,67 @@ docker logs -f apache
 docker exec -it postgres psql -U appuser -d appdb
 ```
 
+**Comandos útiles**
+- **Levantar el stack** (raíz):
+
+```bash
+./stack01/start.sh
+# o
+docker compose -f stack01/docker-compose.yml up -d --build
+```
+
+- **Reconstruir solo WildFly** (desarrollo):
+
+```bash
+cd stack01
+docker compose up -d --build wildfly
+```
+
+- **Reiniciar Apache** (después de cambiar `httpd.conf`):
+
+```bash
+cd stack01 && docker compose restart apache
+```
+
+- **Ver logs en tiempo real**:
+
+```bash
+docker logs -f wildfly
+docker logs -f postgres
+docker logs -f apache
+```
+
+- **Crear usuario admin (helper)**:
+
+```bash
+./stack01/wildfly/add-admin.sh -u admin -p 'MiPassSeguro123'
+```
+
+- **Forzar creación de admin con .env**:
+
+1. Copia `stack01/.env.example` → `stack01/.env` y rellena valores.
+2. Levanta el stack: `cd stack01 && docker compose up -d --build`
+
+- **Listar módulos/driver dentro del contenedor WildFly**:
+
+```bash
+docker exec wildfly ls -la /opt/wildfly/modules/system/layers/base/org/postgresql/main
+docker exec wildfly cat /opt/wildfly/modules/system/layers/base/org/postgresql/main/module.xml
+```
+
+- **Listar datasources y drivers (jboss-cli)**:
+
+```bash
+docker exec wildfly /opt/wildfly/bin/jboss-cli.sh --connect --commands="/subsystem=datasources:read-resource(recursive=true)"
+```
+
+- **Comprobar datasource `PostgresDS` y probar conexión al pool**:
+
+```bash
+docker exec wildfly /opt/wildfly/bin/jboss-cli.sh --connect --commands="/subsystem=datasources/data-source=PostgresDS:read-resource(include-runtime=true)"
+docker exec wildfly /opt/wildfly/bin/jboss-cli.sh --connect --commands="/subsystem=datasources/data-source=PostgresDS:test-connection-in-pool"
+```
+
 **Buenas prácticas**
 - No borres el volumen `postgres_data` si quieres conservar datos; para reiniciar con datos limpios, elimina el volumen explícitamente (y haz backup antes):
 
