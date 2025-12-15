@@ -125,3 +125,22 @@ docker volume rm docker_postgres_data || true
 - Mantén los scripts de inicialización en `stack01/initdb/` y anótalos en el control de versiones sólo si son idempotentes o seguros para re-ejecución.
 
 Si quieres, puedo añadir un ejemplo `stack01/initdb/01-init.sql` en el repositorio y ajustar el `docker-compose.yml` para mostrar cómo se monta; dime si quieres que lo genere ahora.
+
+**Recomendaciones**
+- **No usar credenciales por defecto en producción**: evita mantener `WILDFLY_ADMIN_PASS` u otras contraseñas en texto plano dentro del repositorio. Usa variables de entorno en el host, un archivo `.env` no versionado o un gestor de secretos.
+- **Usar secretos para entornos sensibles**: considera Docker Secrets, HashiCorp Vault, o el mecanismo de secrets de tu orquestador para almacenar credenciales.
+- **Rotación y cambio de credenciales**: si necesitas cambiar la contraseña de administración, crea un nuevo usuario, transfiere permisos si aplica y elimina el antiguo; evita sobrescribir mgmt-users.properties manualmente.
+- **Inicialización de la DB**: los scripts bajo `stack01/initdb/` se ejecutan sólo la primera vez que Postgres crea el volumen de datos; si quieres re-ejecutarlos borra el volumen `postgres_data` (haz backup antes).
+- **Backups periódicos**: programa backups regulares de la base de datos (por ejemplo `pg_dump`) antes de eliminar volúmenes o hacer cambios destructivos.
+- **Crear usuarios desde entorno**: el contenedor `wildfly` soporta crear un usuario de gestión al arrancar si defines `WILDFLY_ADMIN_USER` y `WILDFLY_ADMIN_PASS` en `docker-compose.yml` o en el entorno del host. Alternativamente usa el helper `stack01/wildfly/add-admin.sh`.
+- **Evitar contraseñas en commits**: no añadas `WILDFLY_ADMIN_PASS` ni otras credenciales en commits; añade ejemplos comentados o usa valores por defecto no sensibles.
+- **Recompilar WildFly tras cambios en la imagen**: si modificas `stack01/wildfly/Dockerfile` o `entrypoint.sh`, reconstruye la imagen:
+
+```bash
+cd stack01
+docker compose up -d --build wildfly
+```
+
+- **Permisos y seguridad**: restringe el acceso a los puertos de administración (`9990`) en entornos públicos o configura reglas de firewall / proxy que permitan acceso sólo desde redes de administración.
+
+Si quieres, añado una pequeña sección de ejemplo en `stack01/.env.example` con variables (sin valores reales) y documentamos cómo usar Docker Secrets; dime si lo genero y lo commito.
