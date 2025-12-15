@@ -23,6 +23,10 @@ services:
       DB_NAME: appdb
       DB_USER: appuser
       DB_PASS: apppass
+      # Opcional: credenciales para crear automáticamente un usuario de administración
+      # Puedes sobrescribir con variables de entorno del host o un .env
+      WILDFLY_ADMIN_USER: ${WILDFLY_ADMIN_USER:-admin}
+      WILDFLY_ADMIN_PASS: ${WILDFLY_ADMIN_PASS:-changeme}
     ports:
       - "8080:8080"
       - "9990:9990"
