@@ -1,0 +1,41 @@
+
+services:
+  postgres:
+    image: postgres:14
+    container_name: postgres
+    environment:
+      POSTGRES_DB: appdb
+      POSTGRES_USER: appuser
+      POSTGRES_PASSWORD: apppass
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  wildfly:
+    build: ./wildfly
+    container_name: wildfly
+    depends_on:
+      - postgres
+    environment:
+      DB_HOST: postgres
+      DB_NAME: appdb
+      DB_USER: appuser
+      DB_PASS: apppass
+    ports:
+      - "8080:8080"
+      - "9990:9990"
+
+
+  apache:
+    image: httpd:2.4
+    container_name: apache
+    depends_on:
+      - wildfly
+    ports:
+      - "80:80"
+    volumes:
+      - ./apache/httpd.conf:/usr/local/apache2/conf/httpd.conf
+
+volumes:
+  postgres_data:
