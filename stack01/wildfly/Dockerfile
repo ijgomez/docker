@@ -12,9 +12,13 @@ mv wildfly-${WILDFLY_VERSION} ${JBOSS_HOME} && \
 rm wildfly.zip
 
 
-# PostgreSQL JDBC driver
-RUN curl -L https://jdbc.postgresql.org/download/postgresql-42.6.0.jar \
--o ${JBOSS_HOME}/standalone/deployments/postgresql.jar
+# PostgreSQL JDBC driver: instalar como módulo de WildFly
+RUN mkdir -p ${JBOSS_HOME}/modules/system/layers/base/org/postgresql/main && \
+	curl -L https://jdbc.postgresql.org/download/postgresql-42.6.0.jar -o /tmp/postgresql-42.6.0.jar && \
+	mv /tmp/postgresql-42.6.0.jar ${JBOSS_HOME}/modules/system/layers/base/org/postgresql/main/postgresql-42.6.0.jar
+
+# Copiar el module descriptor desde el contexto de build
+COPY module.xml /opt/wildfly/modules/system/layers/base/org/postgresql/main/module.xml
 
 
 EXPOSE 8080 9990
