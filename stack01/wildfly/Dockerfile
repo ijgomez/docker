@@ -19,5 +19,8 @@ RUN curl -L https://jdbc.postgresql.org/download/postgresql-42.6.0.jar \
 
 EXPOSE 8080 9990
 
+COPY entrypoint.sh ${JBOSS_HOME}/bin/entrypoint.sh
+RUN chmod +x ${JBOSS_HOME}/bin/entrypoint.sh
 
+ENTRYPOINT ["/opt/wildfly/bin/entrypoint.sh"]
 CMD ["/opt/wildfly/bin/standalone.sh", "-b", "0.0.0.0", "-bmanagement", "0.0.0.0"]
