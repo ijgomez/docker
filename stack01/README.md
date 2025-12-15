@@ -144,3 +144,33 @@ docker compose up -d --build wildfly
 - **Permisos y seguridad**: restringe el acceso a los puertos de administración (`9990`) en entornos públicos o configura reglas de firewall / proxy que permitan acceso sólo desde redes de administración.
 
 Si quieres, añado una pequeña sección de ejemplo en `stack01/.env.example` con variables (sin valores reales) y documentamos cómo usar Docker Secrets; dime si lo genero y lo commito.
+
+**Helper `add-admin.sh`**
+`stack01/wildfly/add-admin.sh` es un script auxiliar para crear un usuario de administración en el contenedor `wildfly`.
+
+Uso rápido:
+
+```bash
+# Generar interactivamente / preguntar usuario (por defecto 'admin') y generar contraseña
+./stack01/wildfly/add-admin.sh
+
+# Especificar usuario y contraseña en la misma línea
+./stack01/wildfly/add-admin.sh -u admin -p 'MiPassSeguro123'
+```
+
+Qué hace:
+- Ejecuta `docker exec -i wildfly /opt/wildfly/bin/add-user.sh -u <user> -p <pass> -s -e`.
+- Imprime la contraseña si la genera automáticamente.
+
+Alternativa: definir variables en `stack01/.env` o en el entorno y levantar `wildfly` para que el `entrypoint` añada el usuario al arrancar.
+
+Ejemplo usando `.env` (poner valores reales en `stack01/.env`, no en el repo):
+
+```bash
+cd stack01
+docker compose up -d --build
+```
+
+`docker-compose` recogerá las variables del archivo `.env` y el `entrypoint` de WildFly intentará crear el usuario si no existe.
+
+He añadido `stack01/.env.example` como plantilla para tus variables de entorno; copia a `stack01/.env` y actualiza los valores.
