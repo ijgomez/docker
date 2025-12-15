@@ -1,12 +1,13 @@
 
 services:
   postgres:
-    image: postgres:14
+    build: ./postgres-wrapper
     container_name: postgres
     environment:
       POSTGRES_DB: appdb
       POSTGRES_USER: appuser
       POSTGRES_PASSWORD: apppass
+      # Si usas Docker Secrets, el wrapper leerá /run/secrets/postgres_password
     ports:
       - "5432:5432"
     volumes:
@@ -30,6 +31,10 @@ services:
     ports:
       - "8080:8080"
       - "9990:9990"
+    volumes:
+      - wildfly_logs:/opt/wildfly/standalone/log
+      - wildfly_tmp:/opt/wildfly/standalone/tmp
+      - wildfly_data:/opt/wildfly/standalone/data
 
 
   apache:
@@ -44,3 +49,6 @@ services:
 
 volumes:
   postgres_data:
+  wildfly_logs:
+  wildfly_tmp:
+  wildfly_data:

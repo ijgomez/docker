@@ -136,6 +136,13 @@ docker compose up -d --build wildfly
 cd stack01 && docker compose restart apache
 ```
 
+- **Reconstruir y levantar (script):**
+
+```bash
+./rebuild.sh        # reconstruye todo el stack y lo levanta
+./rebuild.sh wildfly postgres  # reconstruye y levanta solo wildfly y postgres
+```
+
 - **Ver logs en tiempo real**:
 
 ```bash
@@ -168,12 +175,105 @@ docker exec wildfly cat /opt/wildfly/modules/system/layers/base/org/postgresql/m
 docker exec wildfly /opt/wildfly/bin/jboss-cli.sh --connect --commands="/subsystem=datasources:read-resource(recursive=true)"
 ```
 
-- **Comprobar datasource `PostgresDS` y probar conexión al pool**:
+**Comprobar datasource `PostgresDS` y probar conexión al pool**:
 
 ```bash
 docker exec wildfly /opt/wildfly/bin/jboss-cli.sh --connect --commands="/subsystem=datasources/data-source=PostgresDS:read-resource(include-runtime=true)"
 docker exec wildfly /opt/wildfly/bin/jboss-cli.sh --connect --commands="/subsystem=datasources/data-source=PostgresDS:test-connection-in-pool"
 ```
+
+**Uso de Docker Secrets**
+
+Esta sección explica cómo usar Docker Secrets (Swarm) para no almacenar contraseñas en texto plano.
+
+1) Crear los secrets en el nodo manager de Swarm:
+
+```bash
+echo "apppass" | docker secret create postgres_password -
+echo "MiPassSeguro123" | docker secret create wildfly_admin_password -
+```
+
+2) Ejemplo de fragmento `docker-compose.yml` (versión para Swarm / deploy) para declarar y usar los secrets:
+
+```yaml
+version: '3.8'
+services:
+  postgres:
+    image: postgres:14
+    secrets:
+      - postgres_password
+    environment:
+      POSTGRES_DB: appdb
+      POSTGRES_USER: appuser
+      # NOTA: el contenedor oficial de Postgres no expone automáticamente
+      # POSTGRES_PASSWORD desde un secret; puedes envolver el entrypoint
+      # en una imagen propia que lea /run/secrets/postgres_password y exporte
+      # POSTGRES_PASSWORD antes de invocar el entrypoint original.
+
+  wildfly:
+    image: stack01-wildfly:latest
+    secrets:
+      - wildfly_admin_password
+    environment:
+      WILDFLY_ADMIN_USER: admin
+      # leer en el entrypoint desde /run/secrets/wildfly_admin_password
+
+secrets:
+  postgres_password:
+    external: true
+  wildfly_admin_password:
+    external: true
+```
+
+3) Leer secrets desde los contenedores (recomendado comportamiento del `entrypoint`):
+
+En `stack01/wildfly/entrypoint.sh` puedes añadir (o ya hacerlo) lógica para preferir valores desde archivos de secrets si existen. Ejemplo de snippet a añadir al inicio del `entrypoint`:
+
+```bash
+# si existe secret montado, preferir su valor
+if [ -f "/run/secrets/wildfly_admin_password" ]; then
+  export WILDFLY_ADMIN_PASS=$(cat /run/secrets/wildfly_admin_password)
+fi
+if [ -f "/run/secrets/postgres_password" ]; then
+  export DB_PASS=$(cat /run/secrets/postgres_password)
+fi
+```
+
+4) Postgres + secrets
+
+El contenedor oficial de Postgres no convierte automáticamente un secret montado en `/run/secrets/...` a la variable `POSTGRES_PASSWORD`. Opciones:
+- Crear una pequeña imagen derivada de `postgres:14` que en su `entrypoint` lea `/run/secrets/postgres_password` y exporte `POSTGRES_PASSWORD` antes de llamar al `docker-entrypoint.sh` original.
+- Usar un init container / job externo que inyecte la contraseña (en entornos orquestados).
+
+Ejemplo mínimo de `Dockerfile` wrapper para Postgres (opcional):
+
+```dockerfile
+FROM postgres:14
+COPY docker-entrypoint-wrapper.sh /usr/local/bin/
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint-wrapper.sh"]
+CMD ["postgres"]
+```
+
+Contenido sugerido para `docker-entrypoint-wrapper.sh`:
+
+```bash
+#!/bin/bash
+set -e
+if [ -f /run/secrets/postgres_password ]; then
+  export POSTGRES_PASSWORD="$(cat /run/secrets/postgres_password)"
+fi
+exec docker-entrypoint.sh "$@"
+```
+
+5) Notas de seguridad
+- No añadas archivos de secrets ni `.env` con credenciales al control de versiones.
+- Usa `docker secret` con Swarm o una solución de secretos de tu orquestador (Kubernetes secrets, Vault, etc.).
+- Asegura que los permisos de `/run/secrets/*` sólo permitan lectura al usuario necesario dentro del contenedor.
+
+Si quieres, puedo:
+- añadir automáticamente la lectura de `/run/secrets/*` al `entrypoint.sh` de WildFly (lo hago y commiteo), o
+- generar la imagen wrapper para Postgres y actualizar `docker-compose.yml` para usarla.
+
 
 **Buenas prácticas**
 - No borres el volumen `postgres_data` si quieres conservar datos; para reiniciar con datos limpios, elimina el volumen explícitamente (y haz backup antes):

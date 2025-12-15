@@ -26,5 +26,15 @@ EXPOSE 8080 9990
 COPY entrypoint.sh ${JBOSS_HOME}/bin/entrypoint.sh
 RUN chmod +x ${JBOSS_HOME}/bin/entrypoint.sh
 
+# Crear usuario no-root 'wildfly' y ajustar permisos para ejecutar WildFly sin root
+RUN groupadd -r wildfly && useradd -r -g wildfly -d ${JBOSS_HOME} -s /sbin/nologin wildfly || true
+RUN chown -R wildfly:wildfly ${JBOSS_HOME} || true
+RUN chmod -R g+rwX ${JBOSS_HOME} || true
+RUN chown wildfly:wildfly ${JBOSS_HOME}/bin/entrypoint.sh || true
+
+# NOTA: no cambiamos a USER wildfly aquí para que el entrypoint (ejecutado como root)
+# pueda chown los volúmenes montados en tiempo de ejecución y luego ejecutar
+# WildFly con el usuario 'wildfly' mediante 'runuser'.
+
 ENTRYPOINT ["/opt/wildfly/bin/entrypoint.sh"]
 CMD ["/opt/wildfly/bin/standalone.sh", "-b", "0.0.0.0", "-bmanagement", "0.0.0.0"]
