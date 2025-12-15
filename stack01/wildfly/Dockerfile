@@ -21,6 +21,19 @@ RUN mkdir -p ${JBOSS_HOME}/modules/system/layers/base/org/postgresql/main && \
 COPY module.xml /opt/wildfly/modules/system/layers/base/org/postgresql/main/module.xml
 
 
+# Eliminar datasource ExampleDS durante la construcción de la imagen (si existe).
+# Usamos el 'jboss-cli' en modo embed-server para modificar la configuración sin
+# tener que arrancar el servidor completo.
+RUN cat > /tmp/remove-example.cli <<'CLI'
+embed-server --server-config=standalone.xml --std-out=echo
+/subsystem=datasources/data-source=ExampleDS:remove()
+:reload
+stop-embedded-server
+CLI
+RUN /opt/wildfly/bin/jboss-cli.sh --file=/tmp/remove-example.cli || true
+RUN rm -f /tmp/remove-example.cli || true
+
+
 EXPOSE 8080 9990
 
 COPY entrypoint.sh ${JBOSS_HOME}/bin/entrypoint.sh
