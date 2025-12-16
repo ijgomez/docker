@@ -35,3 +35,22 @@ Si quieres, puedo:
 - añadir un `Dockerfile` más avanzado para WildFly con usuario no-root y entrypoint personalizado (similar al de `stack01`),
 - añadir scripts `start.sh` / `stop.sh` para este stack, o
 - levantar el stack ahora y comprobar que los servicios arrancan correctamente.
+
+## Scripts incluidos
+
+He añadido tres scripts convenientes en la raíz de `stack02` para controlar el stack sin teclear comandos largos:
+
+- `start.sh`: Reconstruye (si hace falta) y arranca todos los servicios.
+- `stop.sh`: Para y elimina los contenedores del stack (`docker compose down`).
+- `rebuild.sh`: Reconstruye las imágenes (total o servicios específicos) y levanta los servicios.
+
+Ejemplos de uso (ejecutar desde `stack02`):
+
+```bash
+./start.sh               # reconstruye y levanta todo el stack
+./stop.sh                # para y elimina los contenedores del stack
+./rebuild.sh             # reconstruye todas las imágenes y levanta
+./rebuild.sh wildfly     # reconstruye y levanta solo el servicio 'wildfly'
+```
+
+Estas utilidades facilitan el flujo de trabajo local; dime si quieres que adapte sus flags o comportamiento.
