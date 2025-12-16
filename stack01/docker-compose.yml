@@ -1,7 +1,7 @@
 
 services:
   postgres:
-    build: ./postgres-wrapper
+    build: ./postgres
     container_name: postgres
     environment:
       POSTGRES_DB: appdb
