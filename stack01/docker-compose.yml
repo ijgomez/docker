@@ -2,7 +2,7 @@
 services:
   postgres:
     build: ./postgres
-    container_name: postgres
+    container_name: stack01_postgres
     environment:
       POSTGRES_DB: appdb
       POSTGRES_USER: appuser
@@ -16,7 +16,7 @@ services:
 
   wildfly:
     build: ./wildfly
-    container_name: wildfly
+    container_name: stack01_wildfly
     depends_on:
       - postgres
     environment:
@@ -39,7 +39,7 @@ services:
 
   apache:
     image: httpd:2.4
-    container_name: apache
+    container_name: stack01_apache
     depends_on:
       - wildfly
     ports:
