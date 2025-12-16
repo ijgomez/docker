@@ -143,6 +143,20 @@ cd stack01 && docker compose restart apache
 ./rebuild.sh wildfly postgres  # reconstruye y levanta solo wildfly y postgres
 ```
 
+- **Iniciar contenedores sin recrear**:
+
+```bash
+./start-containers.sh        # inicia todos los contenedores ya creados
+./start-containers.sh wildfly # inicia solo el servicio wildfly (si existe)
+```
+
+- **Parar contenedores sin eliminarlos**:
+
+```bash
+./stop-containers.sh         # para todos los contenedores del stack (no los elimina)
+./stop-containers.sh wildfly  # para solo wildfly
+```
+
 - **Ver logs en tiempo real**:
 
 ```bash
