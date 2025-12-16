@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  apache:
+    image: httpd:2.4
+    container_name: stack02_apache
+    depends_on:
+      - wildfly
+    ports:
+      - "80:80"
+    volumes:
+      - ./apache/httpd.conf:/usr/local/apache2/conf/httpd.conf:ro
+
+  wildfly:
+    build: ./wildfly
+    container_name: stack02_wildfly
+    environment:
+      JBOSS_HOME: /opt/wildfly
+    ports:
+      - "8080:8080"
+      - "9990:9990"
+    volumes:
+      - wildfly_data:/opt/wildfly/standalone
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.6.2
+    container_name: stack02_elasticsearch
+    environment:
+      - discovery.type=single-node
+      - cluster.name=stack02-es
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+
+volumes:
+  wildfly_data:
+  es_data:
