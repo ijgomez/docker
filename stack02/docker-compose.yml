@@ -1,4 +1,5 @@
 services:
+  # --- APACHE (Logs en ./logs/apache) ---
   apache:
     image: httpd:2.4
     container_name: stack02_apache
@@ -8,18 +9,32 @@ services:
       - "80:80"
     volumes:
       - ./apache/httpd.conf:/usr/local/apache2/conf/httpd.conf:ro
+      - ./logs/apache:/usr/local/apache2/logs
+    networks:
+      - stack02_network
 
+  # --- WILDFLY (Logs en ./logs/wildfly) ---
   wildfly:
-    build: ./wildfly
+    build:
+      context: ./wildfly
+      args:
+        - WF_ADMIN_USER=admin
+        - WF_ADMIN_PASSWORD=Admin.1234
+        - WF_SERVER_NAME=server-local
     container_name: stack02_wildfly
     environment:
-      JBOSS_HOME: /opt/wildfly
+      - JBOSS_HOME=/apps/stack02/wildfly
     ports:
       - "8080:8080"
       - "9990:9990"
     volumes:
-      - wildfly_data:/opt/wildfly/standalone
+      - ./deployments:/apps/stack02/wildfly/standalone/deployments
+      - ./logs/wildfly:/apps/stack02/wildfly/standalone/log
+      - wildfly_data:/apps/stack02/wildfly/standalone/configuration
+    networks:
+      - stack02_network
 
+  # --- ELASTICSEARCH (Logs en ./logs/elasticsearch) ---
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.6.2
     container_name: stack02_elasticsearch
@@ -33,10 +48,47 @@ services:
         hard: -1
     ports:
       - "9200:9200"
-      - "9300:9300"
     volumes:
       - es_data:/usr/share/elasticsearch/data
+      - ./logs/elasticsearch:/usr/share/elasticsearch/logs
+    networks:
+      - stack02_network
+
+  # --- OPENLDAP (Logs en ./logs/ldap) ---
+  openldap:
+    image: osixia/openldap:1.5.0
+    container_name: stack02_ldap
+    environment:
+      - LDAP_ORGANISATION=stack02Empresa
+      - LDAP_DOMAIN=stack02.local
+      - LDAP_ADMIN_PASSWORD=adminpassword
+      - LDAP_CONFIG_PASSWORD=configpassword
+    volumes:
+      - ldap_data:/var/lib/ldap
+      - ldap_config:/etc/ldap/slapd.d
+      - ./logs/ldap:/var/log/ldap
+    networks:
+      - stack02_network
+
+  # --- PHPLDAPADMIN ---
+  phpldapadmin:
+    image: osixia/phpldapadmin:0.9.0
+    container_name: stack02_ldap_admin
+    environment:
+      - PHPLDAPADMIN_LDAP_HOSTS=openldap
+      - PHPLDAPADMIN_HTTPS=false
+      # username y password por defecto: cn=admin,dc=stack02,dc=local / adminpassword
+    depends_on:
+      - openldap
+    networks:
+      - stack02_network
+
+networks:
+  stack02_network:
+    driver: bridge
 
 volumes:
   wildfly_data:
   es_data:
+  ldap_data:
+  ldap_config:

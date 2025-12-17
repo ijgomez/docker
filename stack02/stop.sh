@@ -16,6 +16,6 @@ echo "Stopping stack02..."
 
 cd "$(dirname "$0")"
 
-$COMPOSE_CMD down
+$COMPOSE_CMD down --volumes
 
-echo "Stack02 stopped. Volúmenes persistentes no se borran a menos que uses --volumes." 
+echo "stack02 stopped." 

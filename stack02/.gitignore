@@ -1,0 +1,3 @@
+# Ignorar el directorio de logs general y su contenido
+deployments/
+logs/

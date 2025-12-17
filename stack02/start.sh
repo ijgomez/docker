@@ -18,7 +18,7 @@ cd "$(dirname "$0")"
 
 $COMPOSE_CMD up -d --build
 
-echo "Stack02 up and running"
+echo "stack02 up and running"
 echo "Apache → http://localhost"
 echo "WildFly → http://localhost:8080"
 echo "Elasticsearch → http://localhost:9200"

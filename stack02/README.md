@@ -1,4 +1,4 @@
-## Stack02
+## stack02
 
 Stack de ejemplo que contiene:
 
