@@ -44,7 +44,3 @@ docker volume prune -f         # elimina volúmenes no usados
 ```
 
 Usa estos comandos con precaución en entornos de producción: revisa qué vas a eliminar antes de ejecutar `-f`.
-
-**Stack02**
-- **Descripción**: Stack compuesto por `apache` (Apache actúa como reverse proxy hacia WildFly), `wildfly` y `elasticsearch`.
-- **Ubicación**: `stack02/`.
