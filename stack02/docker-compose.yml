@@ -58,15 +58,23 @@ services:
   openldap:
     image: osixia/openldap:1.5.0
     container_name: stack02_ldap
+    # El comando --copy-service evita que el script falle al intentar modificar archivos en volúmenes montados.
+    command: ["--copy-service", "--loglevel", "debug"]
     environment:
       - LDAP_ORGANISATION=stack02Empresa
       - LDAP_DOMAIN=stack02.local
       - LDAP_ADMIN_PASSWORD=adminpassword
       - LDAP_CONFIG_PASSWORD=configpassword
+      # Desactivamos TLS para evitar el error de certificados/enlaces
+      - LDAP_TLS=false
+      # Deshabilita el cambio de dueño de archivos problemático
+      - DISABLE_CHOWN=true
+    # Ports LDAP estándard y TLS (que hemos desactivado): 389, 636
     volumes:
       - ldap_data:/var/lib/ldap
       - ldap_config:/etc/ldap/slapd.d
       - ./logs/ldap:/var/log/ldap
+      - ./openldap/seed:/container/service/slapd/assets/config/bootstrap/ldif/custom:ro
     networks:
       - stack02_network
 
