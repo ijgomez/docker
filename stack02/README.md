@@ -25,6 +25,45 @@ Accesos:
 - WildFly: http://localhost:8080
 - Elasticsearch: http://localhost:9200
 
+## Servicios definidos
+
+Aquí tienes un resumen de los servicios que define `docker-compose.yml` en este stack:
+
+- `apache`:
+	- Imagen: `httpd:2.4` (configuración en `stack02/apache/httpd.conf`).
+	- Función: reverse-proxy hacia `wildfly` en `http://wildfly:8080`.
+	- Puertos: `80` expuesto en el host.
+
+- `wildfly`:
+	- Build: `./wildfly` (`stack02/wildfly/Dockerfile`).
+	- Versión: WildFly 11.0.0.Final sobre Java 11 (Eclipse Temurin).
+	- Puertos: `8080` (app) y `9990` (management).
+	- Volumen: `wildfly_data` montado en `/opt/wildfly/standalone` para persistencia de configuración/temporal/logs.
+
+- `elasticsearch`:
+	- Imagen: `docker.elastic.co/elasticsearch/elasticsearch:7.6.2`.
+	- Configuración: `discovery.type=single-node` (modo desarrollo).
+	- Variables: `ES_JAVA_OPTS=-Xms512m -Xmx512m` (ajustable).
+	- Puertos: `9200` (HTTP) y `9300` (transport) expuestos en el host.
+	- Volumen: `es_data` para almacenar los datos de Elasticsearch.
+
+- `openldap`:
+	- Imagen: `osixia/openldap:1.5.0`.
+	- Función: servidor LDAP para directorios (configurado para entorno de desarrollo).
+	- Variables importantes: `LDAP_ORGANISATION`, `LDAP_DOMAIN`, `LDAP_ADMIN_PASSWORD`, `LDAP_CONFIG_PASSWORD`. En este stack además se desactiva TLS (`LDAP_TLS=false`) y se evita el cambio de dueño en volúmenes (`DISABLE_CHOWN=true`) para compatibilidad con sistemas host.
+	- Volúmenes: usa `ldap_data` (datos) y `ldap_config` (configuración), y carga archivos seed desde `./openldap/seed`.
+	- Notas: por defecto no se exponen puertos LDAP en el host en este `docker-compose.yml`; si necesitas acceder desde el host añade un mapeo de puertos, por ejemplo `ports: - "389:389"`.
+
+- `phpldapadmin`:
+	- Imagen: `osixia/phpldapadmin:0.9.0`.
+	- Función: interfaz web de administración para OpenLDAP (phpLDAPadmin).
+	- Variables: `PHPLDAPADMIN_LDAP_HOSTS=openldap`, `PHPLDAPADMIN_HTTPS=false`.
+	- Notas: por defecto no expone puertos al host en este compose. Para acceder desde el navegador añade un mapeo `ports: - "8081:80"` al servicio. Credenciales por defecto para entrer en el directorio: `cn=admin,dc=stack02,dc=local` / `adminpassword`.
+
+Los volúmenes declarados en el Compose son `wildfly_data`, `es_data`, `ldap_data` y `ldap_config`.
+
+Nota: el `docker-compose.yml` de este stack no usa la clave `version` (Docker Compose la ignora y la advertencia fue eliminada).
+
 ## Notas
 
 - Elasticsearch se configura en modo `single-node` mediante `discovery.type=single-node` y se expone en los puertos 9200/9300 en el host.
