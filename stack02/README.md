@@ -5,6 +5,8 @@ Stack de ejemplo que contiene:
 - `apache` (httpd 2.4) — actúa como reverse-proxy hacia WildFly
 - `wildfly` (WildFly 11.0.0.Final) — ejecutada con Java 11 (Eclipse Temurin)
 - `elasticsearch` (Elasticsearch 7.6.2) — configuración para entorno de desarrollo (single-node)
+- `openldap` (OpenLDAP 1.5.0) — entorno de desarrollo
+- `phpldapadmin` (phpLDAPadmin 0.9.0)
 
 ## Requisitos
 
@@ -21,8 +23,10 @@ docker compose up -d --build
 
 Accesos:
 
-- Apache: http://localhost:80 (proxy a WildFly)
+- Apache: http://localhost (proxy a WildFly y PhpLDAPAdmin)
+- LDAP Admin: http://localhost/ldapadmin
 - WildFly: http://localhost:8080
+- WildFly Management: http://localhost:9990
 - Elasticsearch: http://localhost:9200
 
 ## Servicios definidos
