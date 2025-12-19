@@ -74,11 +74,6 @@ Nota: el `docker-compose.yml` de este stack no usa la clave `version` (Docker Co
 - WildFly se construye desde `stack02/wildfly/Dockerfile`. Ajusta el Dockerfile si necesitas módulos adicionales.
 - Los datos de Elasticsearch se almacenan en el volumen `es_data`.
 
-Si quieres, puedo:
-- añadir un `Dockerfile` más avanzado para WildFly con usuario no-root y entrypoint personalizado (similar al de `stack01`),
-- añadir scripts `start.sh` / `stop.sh` para este stack, o
-- levantar el stack ahora y comprobar que los servicios arrancan correctamente.
-
 ## Scripts incluidos
 
 He añadido tres scripts convenientes en la raíz de `stack02` para controlar el stack sin teclear comandos largos:
