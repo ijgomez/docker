@@ -1,4 +1,4 @@
-
+name: stack01
 services:
   postgres:
     build: ./postgres

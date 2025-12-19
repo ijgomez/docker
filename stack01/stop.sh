@@ -10,8 +10,10 @@ else
   exit 1
 fi
 
-echo "Stoppping stack Docker..."
+echo "Stopping stack..."
 
-$COMPOSE_CMD down
+cd "$(dirname "$0")"
+
+$COMPOSE_CMD down --volumes
 
 echo "Stack stopped."

@@ -1,3 +1,4 @@
+name: stack02
 services:
   # --- APACHE (Logs en ./logs/apache) ---
   apache:
