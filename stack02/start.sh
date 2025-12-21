@@ -12,7 +12,7 @@ else
   exit 1
 fi
 
-echo "Starting stack02 (Apache + WildFly + Elasticsearch)..."
+echo "Starting stack02 (Apache + WildFly + Elasticsearch + AD + LDAP + LDAP Admin)..."
 
 cd "$(dirname "$0")"
 
@@ -20,6 +20,6 @@ $COMPOSE_CMD up -d --build
 
 echo "stack02 up and running"
 echo "Apache → http://localhost"
-echo "Phpldapadmin → http://localhost/ldapadmin"
+echo "LDAP Admin → http://localhost/ldapadmin"
 echo "WildFly → http://localhost:8080"
 echo "Elasticsearch → http://localhost:9200"

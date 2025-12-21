@@ -1,6 +1,6 @@
 name: stack02
 services:
-  # --- APACHE (Logs en ./logs/apache) ---
+  # --- APACHE HTTP ---
   apache:
     image: httpd:2.4
     container_name: stack02_apache
@@ -14,7 +14,7 @@ services:
     networks:
       - stack02_network
 
-  # --- WILDFLY (Logs en ./logs/wildfly) ---
+  # --- WILDFLY/JBOSS ---
   wildfly:
     build:
       context: ./wildfly
@@ -35,7 +35,7 @@ services:
     networks:
       - stack02_network
 
-  # --- ELASTICSEARCH (Logs en ./logs/elasticsearch) ---
+  # --- ELASTICSEARCH ---
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.6.2
     container_name: stack02_elasticsearch
@@ -55,7 +55,25 @@ services:
     networks:
       - stack02_network
 
-  # --- OPENLDAP (Logs en ./logs/ldap) ---
+  # --- ACTIVE DIRECTORY ---
+  samba-ad:
+    image: nowsci/samba-domain
+    container_name: stack02_ad
+    privileged: true
+    environment:
+      - DOMAIN=stack02.local
+      - DOMAINPASS=Admin_Password_2025!
+      - DNSFORWARDER=8.8.8.8
+      - HOSTNAME=stack02-ad-local
+    volumes:
+      - samba_data:/var/lib/samba
+    ports:
+      - "389:389"        # LDAP
+      - "636:636"        # LDAPS
+    networks:
+      - stack02_network
+
+  # --- LDAP ---
   openldap:
     image: osixia/openldap:1.5.0
     container_name: stack02_ldap
@@ -70,7 +88,7 @@ services:
       - LDAP_TLS=false
       # Deshabilita el cambio de dueño de archivos problemático
       - DISABLE_CHOWN=true
-    # Ports LDAP estándard y TLS (que hemos desactivado): 389, 636
+    # Ports LDAP estándard y TLS: 389, 636
     ports:
       - "5389:389"
       - "5636:636"
@@ -83,14 +101,13 @@ services:
     networks:
       - stack02_network
 
-  # --- PHPLDAPADMIN ---
+  # --- LDAP ADMIN ---
   phpldapadmin:
     image: osixia/phpldapadmin:0.9.0
     container_name: stack02_ldap_admin
     environment:
       - PHPLDAPADMIN_LDAP_HOSTS=openldap
       - PHPLDAPADMIN_HTTPS=false
-      # username y password por defecto: cn=admin,dc=stack02,dc=local / adminpassword
     depends_on:
       - openldap
     networks:
@@ -103,5 +120,6 @@ networks:
 volumes:
   wildfly_data:
   es_data:
+  samba_data:
   ldap_data:
   ldap_config:

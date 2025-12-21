@@ -4,6 +4,7 @@ Stack de ejemplo que contiene:
 - `apache` (Apache 2.4)
 - `wildfly` (WildFly 11.0.0.Final)
 - `elasticsearch` (Elasticsearch 7.6.2)
+- `samba-ad` (Active Directory Domain Controller basado en Samba)
 - `openldap` (OpenLDAP 1.5.0)
 - `phpldapadmin` (phpLDAPadmin 0.9.0) - Opcional
 
@@ -26,7 +27,8 @@ docker compose up -d --build
 - WildFly: http://localhost:8080
 - WildFly Management: http://localhost:9990
 - Elasticsearch: http://localhost:9200
-- OpenLDAP: http://localhost:5389
+- OpenLDAP: ldap://localhost:5389 (LDAPS en 5636)
+- Active Directory (Samba AD DC): ldap://localhost:389 (LDAPS en 636)
 
 ## Servicios definidos en el stack
 
@@ -52,12 +54,21 @@ Aquí tienes un resumen de los servicios que define `docker-compose.yml` en este
 	- Volumen: `es_data` para almacenar los datos de Elasticsearch.
     - **Nota**: configuración para entorno de desarrollo (single-node)
 
+- `samba-ad`:
+	- Imagen: `nowsci/samba-domain` (controlador de dominio Active Directory basado en Samba).
+	- Dominio: `stack02.local`.
+	- Credenciales: usuario `Administrator`, contraseña `${DOMAINPASS}` definida en `docker-compose.yml` (`Admin_Password_2025!`).
+	- Puertos: `389` (LDAP) y `636` (LDAPS) expuestos en el host.
+	- Volumen: `samba_data` para la base de datos del dominio.
+	- Hostname del DC: `stack02-ad-local`.
+
 - `openldap`:
 	- Imagen: `osixia/openldap:1.5.0`.
 	- Función: servidor LDAP para directorios (configurado para entorno de desarrollo).
 	- Variables importantes: `LDAP_ORGANISATION`, `LDAP_DOMAIN`, `LDAP_ADMIN_PASSWORD`, `LDAP_CONFIG_PASSWORD`. En este stack además se desactiva TLS (`LDAP_TLS=false`) y se evita el cambio de dueño en volúmenes (`DISABLE_CHOWN=true`) para compatibilidad con sistemas host.
 	- Volúmenes: usa `ldap_data` (datos) y `ldap_config` (configuración), y carga archivos seed desde `./openldap/seed`.
     - Puertos: `5389` (ldap) y `5636` (ldaps).
+	- **Nota**: se usan puertos distintos a 389/636 para no colisionar con el AD.
 
 - `phpldapadmin`:
 	- Imagen: `osixia/phpldapadmin:0.9.0`.
@@ -103,9 +114,3 @@ Cómo está configurado en este stack:
 - El LDIF `01-custom-classes.ldif` define `entrustUser` como clase auxiliar.
 - Se aplicó en el servidor con `cn=config` y se añadieron las `objectClass` al entry deseado.
 - El certificado es solo para desarrollo (self-signed). Si necesitas uno real, reemplaza el contenido en `seed.ldif` y recrea el contenedor.
-
-
-
-
-
-
