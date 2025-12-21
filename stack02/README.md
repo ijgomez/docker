@@ -57,8 +57,9 @@ Aquí tienes un resumen de los servicios que define `docker-compose.yml` en este
 - `samba-ad`:
 	- Imagen: `nowsci/samba-domain` (controlador de dominio Active Directory basado en Samba).
 	- Dominio: `stack02.local`.
-	- Credenciales: usuario `Administrator`, contraseña `${DOMAINPASS}` definida en `docker-compose.yml` (`Admin_Password_2025!`).
+	- Credenciales: `administrator@stack02.local` / `Admin_Password_2025!` (variable para contraseña: `DOMAINPASS`).
 	- Puertos: `389` (LDAP) y `636` (LDAPS) expuestos en el host.
+    - Requiere cifrado: usa StartTLS sobre ldap:`389` o ldaps:`636` (certificado autofirmado).
 	- Volumen: `samba_data` para la base de datos del dominio.
 	- Hostname del DC: `stack02-ad-local`.
 
@@ -114,3 +115,12 @@ Cómo está configurado en este stack:
 - El LDIF `01-custom-classes.ldif` define `entrustUser` como clase auxiliar.
 - Se aplicó en el servidor con `cn=config` y se añadieron las `objectClass` al entry deseado.
 - El certificado es solo para desarrollo (self-signed). Si necesitas uno real, reemplaza el contenido en `seed.ldif` y recrea el contenedor.
+
+### Conexión a Active Directory (LDAP + StartTLS)
+Ejemplo (Apache Directory Studio):
+- Host: `localhost`
+- Puerto: `389`
+- Security/Encryption: `StartTLS`
+- Bind DN o UPN: `administrator@stack02.local`
+- Password: `Admin_Password_2025!`
+- Acepta el certificado autofirmado del contenedor (o marca “Trust all” en entornos de dev)
