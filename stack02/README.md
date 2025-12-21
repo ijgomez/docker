@@ -1,10 +1,11 @@
 # stack02
 
 Stack de ejemplo que contiene:
-- `elasticsearch` (Elasticsearch 7.6.2) — configuración para entorno de desarrollo (single-node)
-- `openldap` (OpenLDAP 1.5.0) — entorno de desarrollo
-- `phpldapadmin` (phpLDAPadmin 0.9.0)
+- `apache` (Apache 2.4)
 - `wildfly` (WildFly 11.0.0.Final)
+- `elasticsearch` (Elasticsearch 7.6.2)
+- `openldap` (OpenLDAP 1.5.0)
+- `phpldapadmin` (phpLDAPadmin 0.9.0)
 
 ## Requisitos
 
@@ -21,7 +22,7 @@ docker compose up -d --build
 ## Accesos
 
 - Apache: http://localhost (proxy a WildFly y PhpLDAPAdmin)
-- LDAP Admin: http://localhost/ldapadmin
+- PhpLDAPAdmin  : http://localhost/ldapadmin
 - WildFly: http://localhost:8080
 - WildFly Management: http://localhost:9990
 - Elasticsearch: http://localhost:9200
@@ -33,7 +34,7 @@ Aquí tienes un resumen de los servicios que define `docker-compose.yml` en este
 
 - `apache`:
 	- Imagen: `httpd:2.4` (configuración en `stack02/apache/httpd.conf`).
-	- Función: reverse-proxy hacia `wildfly` en `http://wildfly:8080`.
+	- Función: reverse-proxy hacia `wildfly` en `http://wildfly:8080` y `phpldapadmin` en `http://phpldapadmin:80.
 	- Puertos: `80` expuesto en el host.
 
 - `wildfly`:
@@ -48,6 +49,7 @@ Aquí tienes un resumen de los servicios que define `docker-compose.yml` en este
 	- Variables: `ES_JAVA_OPTS=-Xms512m -Xmx512m` (ajustable).
 	- Puertos: `9200` (HTTP) y `9300` (transport) expuestos en el host.
 	- Volumen: `es_data` para almacenar los datos de Elasticsearch.
+    - Nota: configuración para entorno de desarrollo (single-node)
 
 - `openldap`:
 	- Imagen: `osixia/openldap:1.5.0`.
@@ -62,10 +64,6 @@ Aquí tienes un resumen de los servicios que define `docker-compose.yml` en este
 	- Variables: `PHPLDAPADMIN_LDAP_HOSTS=openldap`, `PHPLDAPADMIN_HTTPS=false`.
     - Puertos: No hay acceso directo, se utiliza la url `http://localhost/ldapadmin`.
 	- Credenciales (por defecto) para entrer en el directorio: `cn=admin,dc=stack02,dc=local` / `adminpassword`.
-
-Los volúmenes declarados en el Compose son `wildfly_data`, `es_data`, `ldap_data` y `ldap_config`.
-
-Nota: el `docker-compose.yml` de este stack no usa la clave `version` (Docker Compose la ignora y la advertencia fue eliminada).
 
 ## Scripts
 
@@ -88,7 +86,8 @@ Estas utilidades facilitan el flujo de trabajo local
 
 ## Notas
 
-- Elasticsearch se configura en modo `single-node` mediante `discovery.type=single-node` y se expone en los puertos 9200/9300 en el host.
+- El `docker-compose.yml` de este stack no usa la clave `version`.
+- Elasticsearch se configura en modo `single-node` mediante `discovery.type=single-node` .
 - WildFly se construye desde `stack02/wildfly/Dockerfile`. Ajusta el Dockerfile si necesitas módulos adicionales.
 - Los datos de Elasticsearch se almacenan en el volumen `es_data`.
 
