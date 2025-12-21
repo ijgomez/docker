@@ -1,11 +1,22 @@
 ## stack02
 
 Stack de ejemplo que contiene:
-
-- `apache` (httpd 2.4) — actúa como reverse-proxy hacia WildFly
-- `wildfly` (WildFly 11.0.0.Final) — ejecutada con Java 11 (Eclipse Temurin)
 - `elasticsearch` (Elasticsearch 7.6.2) — configuración para entorno de desarrollo (single-node)
 - `openldap` (OpenLDAP 1.5.0) — entorno de desarrollo
+
+## Esquemas LDAP personalizados
+
+Para añadir `objectClass` adicionales:
+- `pkiUser` ya está incluido en el esquema `core` de OpenLDAP.
+- `entrustUser` se carga como esquema personalizado de ejemplo.
+
+Cómo está configurado en este stack:
+- Se monta `stack02/openldap/schema` en el contenedor para bootstrap: `./openldap/schema:/container/service/slapd/assets/config/bootstrap/schema/custom:ro`.
+- El LDIF `01-custom-classes.ldif` define `entrustUser` como clase auxiliar.
+- Se aplicó en el servidor con `cn=config` y se añadieron las `objectClass` al entry deseado.
+
+Comandos útiles:
+
 - `phpldapadmin` (phpLDAPadmin 0.9.0)
 
 ## Requisitos
@@ -16,7 +27,6 @@ Stack de ejemplo que contiene:
 
 Desde el directorio `stack02` ejecuta:
 
-```bash
 # reconstruye la imagen de WildFly y levanta todos los servicios
 docker compose up -d --build
 ```
@@ -25,6 +35,22 @@ Accesos:
 
 - Apache: http://localhost (proxy a WildFly y PhpLDAPAdmin)
 - LDAP Admin: http://localhost/ldapadmin
+
+Advertencia: esquemas y clases personalizadas son sólo de ejemplo para desarrollo. En producción, usa OIDs y definiciones oficiales, y valida atributos requeridos por cada clase (por ejemplo, `pkiUser` puede requerir `userCertificate`).
+
+### Ejemplo: `userCertificate` en Clients
+
+`stack02/openldap/seed/seed.ldif` ya incluye el certificado de prueba para el DN `cn=0,cn=7265,cn=70,ou=Clients,dc=stack02,dc=local` (se aplica automáticamente en el bootstrap del contenedor).
+
+Verificar el atributo:
+
+```bash
+cd stack02
+docker exec -i stack02_ldap ldapsearch -x -LLL -D "cn=admin,dc=stack02,dc=local" -w adminpassword \
+	-b "cn=0,cn=7265,cn=70,ou=Clients,dc=stack02,dc=local" "(objectClass=*)" "userCertificate;binary"
+```
+
+El certificado es solo para desarrollo (self-signed). Si necesitas uno real, reemplaza el contenido en `seed.ldif` y recrea el contenedor.
 - WildFly: http://localhost:8080
 - WildFly Management: http://localhost:9990
 - Elasticsearch: http://localhost:9200

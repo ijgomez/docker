@@ -79,6 +79,7 @@ services:
       - ldap_config:/etc/ldap/slapd.d
       - ./logs/ldap:/var/log/ldap
       - ./openldap/seed:/container/service/slapd/assets/config/bootstrap/ldif/custom:ro
+      - ./openldap/schema:/container/service/slapd/assets/config/bootstrap/schema/custom:ro
     networks:
       - stack02_network
 

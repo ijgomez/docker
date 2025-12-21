@@ -1,0 +1,5 @@
+dn: cn=custom-classes,cn=schema,cn=config
+objectClass: olcSchemaConfig
+cn: custom-classes
+# Minimal auxiliary classes to allow adding these objectClasses to entries
+olcObjectClasses: ( 1.3.6.1.4.1.99999.3 NAME 'entrustUser' SUP top AUXILIARY )
