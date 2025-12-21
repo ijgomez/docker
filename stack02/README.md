@@ -27,8 +27,8 @@ docker compose up -d --build
 - WildFly: http://localhost:8080
 - WildFly Management: http://localhost:9990
 - Elasticsearch: http://localhost:9200
-- OpenLDAP: ldap://localhost:5389 (LDAPS en 5636)
-- Active Directory (Samba AD DC): ldap://localhost:389 (LDAPS en 636)
+- OpenLDAP: `ldap://localhost:5389` (LDAPS en 5636)
+- Active Directory (Samba AD DC): `ldap://localhost:389` (LDAPS en 636)
 
 ## Servicios definidos en el stack
 
@@ -44,7 +44,7 @@ Aquí tienes un resumen de los servicios que define `docker-compose.yml` en este
 	- Versión: WildFly 11.0.0.Final sobre Java 11 (Eclipse Temurin).
 	- Puertos: `8080` (app) y `9990` (management).
 	- Volumen: `wildfly_data` montado en `/opt/wildfly/standalone` para persistencia de configuración/temporal/logs.
-    - Credenciales (por defecto) para entrar en la consola de administración: `admin` / `Admin.1234`.
+    - Credenciales (por defecto) para entrar en la consola de administración (management): `admin` / `Admin.1234`.
 
 - `elasticsearch`:
 	- Imagen: `docker.elastic.co/elasticsearch/elasticsearch:7.6.2`.
