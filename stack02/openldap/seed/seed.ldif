@@ -1,32 +1,25 @@
-# Estructura para Usuarios
-dn: ou=Users,dc=stack02,dc=local
+# Entrada para Clients
+dn: ou=Clients,dc=stack02,dc=local
 objectClass: organizationalUnit
-ou: Users
+ou: Clients
 
-# Estructura para Grupos
-dn: ou=Groups,dc=stack02,dc=local
-objectClass: organizationalUnit
-ou: Groups
+dn: cn=70,ou=Clients,dc=stack02,dc=local
+objectClass: organizationalRole
+cn: 70
+description: Client 70
 
-# Grupo de ejemplo: Administradores de app
-dn: cn=app-admins,ou=Groups,dc=stack02,dc=local
-objectClass: posixGroup
-cn: app-admins
-gidNumber: 5000
+dn: cn=7265,cn=70,ou=Clients,dc=stack02,dc=local
+objectClass: organizationalRole
+cn: 7265
+description: Device 7265
 
-# Usuario de prueba: appuser (Contraseña: app123)
-dn: uid=appuser,ou=Users,dc=stack02,dc=local
+dn: cn=0,cn=7265,cn=70,ou=Clients,dc=stack02,dc=local
 objectClass: inetOrgPerson
-objectClass: posixAccount
-objectClass: shadowAccount
-uid: appuser
-sn: User
-givenName: app
-cn: app User
-displayName: app User
-uidNumber: 10000
-gidNumber: 5000
-userPassword: app123
-homeDirectory: /home/appuser
-loginShell: /bin/bash
-mail: appuser@stack02.local
+objectClass: organizationalPerson
+objectClass: person
+objectClass: top
+cn: 0
+sn: 7265
+description: Device 7265 of Client 70
+ou: stack02
+uid: 7265CS70
