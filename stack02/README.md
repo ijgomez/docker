@@ -55,9 +55,10 @@ Aquí tienes un resumen de los servicios que define `docker-compose.yml` en este
     - **Nota**: configuración para entorno de desarrollo (single-node)
 
 - `samba-ad`:
-	- Imagen: `nowsci/samba-domain` (controlador de dominio Active Directory basado en Samba).
+	- Build: `./samba-ad` (Dockerfile personalizado basado en `nowsci/samba-domain`).
 	- Dominio: `stack02.local`.
 	- Credenciales: `administrator@stack02.local` / `Admin_Password_2025!` (variable para contraseña: `DOMAINPASS`).
+	- Usuarios creados al arrancar: `Administrator` y `ijgomez` (`ijgomez_Password_2025!`). El script se ejecuta en el contenedor y loguea en `/var/log/create-users.log`.
 	- Puertos: `389` (LDAP) y `636` (LDAPS) expuestos en el host.
     - Requiere cifrado: usa StartTLS sobre ldap:`389` o ldaps:`636` (certificado autofirmado).
 	- Volumen: `samba_data` para la base de datos del dominio.
@@ -124,3 +125,18 @@ Ejemplo (Apache Directory Studio):
 - Bind DN o UPN: `administrator@stack02.local`
 - Password: `Admin_Password_2025!`
 - Acepta el certificado autofirmado del contenedor (o marca “Trust all” en entornos de dev)
+
+### Crear usuarios adicionales en Active Directory
+
+El usuario `ijgomez` se crea automáticamente al levantar el contenedor. Para crear usuarios extra en AD ejecuta (ajusta datos según tu caso):
+
+```bash
+cd stack02
+docker exec -i stack02_ad samba-tool user create nuevo_usuario \
+	--password='Password.1234' \
+	--given-name='Nombre' \
+	--surname='Apellido' \
+	--mail-address='nuevo_usuario@stack02.local'
+```
+
+Luego conéctate con las credenciales definidas usando StartTLS en Apache Directory Studio.

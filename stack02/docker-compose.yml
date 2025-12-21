@@ -57,7 +57,12 @@ services:
 
   # --- ACTIVE DIRECTORY ---
   samba-ad:
-    image: nowsci/samba-domain
+    build:
+      context: ./samba-ad
+      args:
+        - AD_DOMAIN=${DOMAIN}
+        - AD_DOMAINPASS=${DOMAINPASS}
+    image: stack02/samba-domain:latest
     container_name: stack02_ad
     privileged: true
     environment:
