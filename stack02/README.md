@@ -1,23 +1,10 @@
-## stack02
+# stack02
 
 Stack de ejemplo que contiene:
 - `elasticsearch` (Elasticsearch 7.6.2) — configuración para entorno de desarrollo (single-node)
 - `openldap` (OpenLDAP 1.5.0) — entorno de desarrollo
-
-## Esquemas LDAP personalizados
-
-Para añadir `objectClass` adicionales:
-- `pkiUser` ya está incluido en el esquema `core` de OpenLDAP.
-- `entrustUser` se carga como esquema personalizado de ejemplo.
-
-Cómo está configurado en este stack:
-- Se monta `stack02/openldap/schema` en el contenedor para bootstrap: `./openldap/schema:/container/service/slapd/assets/config/bootstrap/schema/custom:ro`.
-- El LDIF `01-custom-classes.ldif` define `entrustUser` como clase auxiliar.
-- Se aplicó en el servidor con `cn=config` y se añadieron las `objectClass` al entry deseado.
-
-Comandos útiles:
-
 - `phpldapadmin` (phpLDAPadmin 0.9.0)
+- `wildfly` (WildFly 11.0.0.Final)
 
 ## Requisitos
 
@@ -27,35 +14,20 @@ Comandos útiles:
 
 Desde el directorio `stack02` ejecuta:
 
-# reconstruye la imagen de WildFly y levanta todos los servicios
+```bash
 docker compose up -d --build
 ```
 
-Accesos:
+## Accesos
 
 - Apache: http://localhost (proxy a WildFly y PhpLDAPAdmin)
 - LDAP Admin: http://localhost/ldapadmin
-
-Advertencia: esquemas y clases personalizadas son sólo de ejemplo para desarrollo. En producción, usa OIDs y definiciones oficiales, y valida atributos requeridos por cada clase (por ejemplo, `pkiUser` puede requerir `userCertificate`).
-
-### Ejemplo: `userCertificate` en Clients
-
-`stack02/openldap/seed/seed.ldif` ya incluye el certificado de prueba para el DN `cn=0,cn=7265,cn=70,ou=Clients,dc=stack02,dc=local` (se aplica automáticamente en el bootstrap del contenedor).
-
-Verificar el atributo:
-
-```bash
-cd stack02
-docker exec -i stack02_ldap ldapsearch -x -LLL -D "cn=admin,dc=stack02,dc=local" -w adminpassword \
-	-b "cn=0,cn=7265,cn=70,ou=Clients,dc=stack02,dc=local" "(objectClass=*)" "userCertificate;binary"
-```
-
-El certificado es solo para desarrollo (self-signed). Si necesitas uno real, reemplaza el contenido en `seed.ldif` y recrea el contenedor.
 - WildFly: http://localhost:8080
 - WildFly Management: http://localhost:9990
 - Elasticsearch: http://localhost:9200
+- OpenLDAP: http://localhost:5389
 
-## Servicios definidos
+## Servicios definidos en el stack
 
 Aquí tienes un resumen de los servicios que define `docker-compose.yml` en este stack:
 
@@ -82,27 +54,22 @@ Aquí tienes un resumen de los servicios que define `docker-compose.yml` en este
 	- Función: servidor LDAP para directorios (configurado para entorno de desarrollo).
 	- Variables importantes: `LDAP_ORGANISATION`, `LDAP_DOMAIN`, `LDAP_ADMIN_PASSWORD`, `LDAP_CONFIG_PASSWORD`. En este stack además se desactiva TLS (`LDAP_TLS=false`) y se evita el cambio de dueño en volúmenes (`DISABLE_CHOWN=true`) para compatibilidad con sistemas host.
 	- Volúmenes: usa `ldap_data` (datos) y `ldap_config` (configuración), y carga archivos seed desde `./openldap/seed`.
-	- Notas: por defecto no se exponen puertos LDAP en el host en este `docker-compose.yml`; si necesitas acceder desde el host añade un mapeo de puertos, por ejemplo `ports: - "389:389"`.
+    - Puertos: `5389` (ldap) y `5636` (ldaps).
 
 - `phpldapadmin`:
 	- Imagen: `osixia/phpldapadmin:0.9.0`.
 	- Función: interfaz web de administración para OpenLDAP (phpLDAPadmin).
 	- Variables: `PHPLDAPADMIN_LDAP_HOSTS=openldap`, `PHPLDAPADMIN_HTTPS=false`.
-	- Notas: por defecto no expone puertos al host en este compose. Para acceder desde el navegador añade un mapeo `ports: - "8081:80"` al servicio. Credenciales por defecto para entrer en el directorio: `cn=admin,dc=stack02,dc=local` / `adminpassword`.
+    - Puertos: No hay acceso directo, se utiliza la url `http://localhost/ldapadmin`.
+	- Credenciales (por defecto) para entrer en el directorio: `cn=admin,dc=stack02,dc=local` / `adminpassword`.
 
 Los volúmenes declarados en el Compose son `wildfly_data`, `es_data`, `ldap_data` y `ldap_config`.
 
 Nota: el `docker-compose.yml` de este stack no usa la clave `version` (Docker Compose la ignora y la advertencia fue eliminada).
 
-## Notas
+## Scripts
 
-- Elasticsearch se configura en modo `single-node` mediante `discovery.type=single-node` y se expone en los puertos 9200/9300 en el host.
-- WildFly se construye desde `stack02/wildfly/Dockerfile`. Ajusta el Dockerfile si necesitas módulos adicionales.
-- Los datos de Elasticsearch se almacenan en el volumen `es_data`.
-
-## Scripts incluidos
-
-He añadido tres scripts convenientes en la raíz de `stack02` para controlar el stack sin teclear comandos largos:
+Hay tres scripts convenientes en la raíz de `stack02` para controlar el stack sin teclear comandos largos:
 
 - `start.sh`: Reconstruye (si hace falta) y arranca todos los servicios.
 - `stop.sh`: Para y elimina los contenedores del stack (`docker compose down`).
@@ -117,4 +84,28 @@ Ejemplos de uso (ejecutar desde `stack02`):
 ./rebuild.sh wildfly     # reconstruye y levanta solo el servicio 'wildfly'
 ```
 
-Estas utilidades facilitan el flujo de trabajo local; dime si quieres que adapte sus flags o comportamiento.
+Estas utilidades facilitan el flujo de trabajo local
+
+## Notas
+
+- Elasticsearch se configura en modo `single-node` mediante `discovery.type=single-node` y se expone en los puertos 9200/9300 en el host.
+- WildFly se construye desde `stack02/wildfly/Dockerfile`. Ajusta el Dockerfile si necesitas módulos adicionales.
+- Los datos de Elasticsearch se almacenan en el volumen `es_data`.
+
+### Esquemas LDAP personalizados
+
+Para añadir `objectClass` adicionales:
+- `pkiUser` ya está incluido en el esquema `core` de OpenLDAP.
+- `entrustUser` se carga como esquema personalizado de ejemplo.
+
+Cómo está configurado en este stack:
+- Se monta `stack02/openldap/schema` en el contenedor para bootstrap: `./openldap/schema:/container/service/slapd/assets/config/bootstrap/schema/custom:ro`.
+- El LDIF `01-custom-classes.ldif` define `entrustUser` como clase auxiliar.
+- Se aplicó en el servidor con `cn=config` y se añadieron las `objectClass` al entry deseado.
+- El certificado es solo para desarrollo (self-signed). Si necesitas uno real, reemplaza el contenido en `seed.ldif` y recrea el contenedor.
+
+
+
+
+
+
