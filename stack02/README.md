@@ -5,7 +5,7 @@ Stack de ejemplo que contiene:
 - `wildfly` (WildFly 11.0.0.Final)
 - `elasticsearch` (Elasticsearch 7.6.2)
 - `openldap` (OpenLDAP 1.5.0)
-- `phpldapadmin` (phpLDAPadmin 0.9.0)
+- `phpldapadmin` (phpLDAPadmin 0.9.0) - Opcional
 
 ## Requisitos
 
@@ -34,7 +34,7 @@ Aquí tienes un resumen de los servicios que define `docker-compose.yml` en este
 
 - `apache`:
 	- Imagen: `httpd:2.4` (configuración en `stack02/apache/httpd.conf`).
-	- Función: reverse-proxy hacia `wildfly` en `http://wildfly:8080` y `phpldapadmin` en `http://phpldapadmin:80.
+	- Función: reverse-proxy hacia `wildfly` en `http://wildfly:8080` y `phpldapadmin` en `http://phpldapadmin:80`.
 	- Puertos: `80` expuesto en el host.
 
 - `wildfly`:
@@ -42,6 +42,7 @@ Aquí tienes un resumen de los servicios que define `docker-compose.yml` en este
 	- Versión: WildFly 11.0.0.Final sobre Java 11 (Eclipse Temurin).
 	- Puertos: `8080` (app) y `9990` (management).
 	- Volumen: `wildfly_data` montado en `/opt/wildfly/standalone` para persistencia de configuración/temporal/logs.
+    - Credenciales (por defecto) para entrar en la consola de administración: `admin` / `Admin.1234`.
 
 - `elasticsearch`:
 	- Imagen: `docker.elastic.co/elasticsearch/elasticsearch:7.6.2`.
@@ -49,7 +50,7 @@ Aquí tienes un resumen de los servicios que define `docker-compose.yml` en este
 	- Variables: `ES_JAVA_OPTS=-Xms512m -Xmx512m` (ajustable).
 	- Puertos: `9200` (HTTP) y `9300` (transport) expuestos en el host.
 	- Volumen: `es_data` para almacenar los datos de Elasticsearch.
-    - Nota: configuración para entorno de desarrollo (single-node)
+    - **Nota**: configuración para entorno de desarrollo (single-node)
 
 - `openldap`:
 	- Imagen: `osixia/openldap:1.5.0`.
@@ -63,7 +64,7 @@ Aquí tienes un resumen de los servicios que define `docker-compose.yml` en este
 	- Función: interfaz web de administración para OpenLDAP (phpLDAPadmin).
 	- Variables: `PHPLDAPADMIN_LDAP_HOSTS=openldap`, `PHPLDAPADMIN_HTTPS=false`.
     - Puertos: No hay acceso directo, se utiliza la url `http://localhost/ldapadmin`.
-	- Credenciales (por defecto) para entrer en el directorio: `cn=admin,dc=stack02,dc=local` / `adminpassword`.
+	- Credenciales (por defecto) para entrar en el directorio: `cn=admin,dc=stack02,dc=local` / `adminpassword`.
 
 ## Scripts
 
