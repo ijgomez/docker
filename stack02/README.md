@@ -8,9 +8,11 @@ Stack de ejemplo que contiene:
 - `openldap` (OpenLDAP 1.5.0)
 - `phpldapadmin` (phpLDAPadmin 0.9.0) - Opcional
 
+Ver la documentación general del repositorio en `../README.md`.
+
 ## Requisitos
 
-- Docker y Docker Compose
+- Docker y Docker Compose (v1 o v2).
 
 ## Levantar el stack
 
@@ -102,8 +104,8 @@ Estas utilidades facilitan el flujo de trabajo local
 ## Notas
 
 - El `docker-compose.yml` de este stack no usa la clave `version`.
-- Elasticsearch se configura en modo `single-node` mediante `discovery.type=single-node` .
 - WildFly se construye desde `stack02/wildfly/Dockerfile`. Ajusta el Dockerfile si necesitas módulos adicionales.
+- Elasticsearch se configura en modo `single-node` mediante `discovery.type=single-node` .
 - Los datos de Elasticsearch se almacenan en el volumen `es_data`.
 
 ### Esquemas LDAP personalizados

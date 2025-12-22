@@ -22,6 +22,7 @@ services:
         - WF_ADMIN_USER=admin
         - WF_ADMIN_PASSWORD=Admin.1234
         - WF_SERVER_NAME=server-local
+    image: stack02/wildfly:latest
     container_name: stack02_wildfly
     environment:
       - JBOSS_HOME=/apps/stack02/wildfly
@@ -72,6 +73,7 @@ services:
       - APP_STACK02_GROUPS=App
     volumes:
       - samba_data:/var/lib/samba
+      - samba_config:/etc/samba/external
     ports:
       - "389:389"        # LDAP
       - "636:636"        # LDAPS
@@ -113,6 +115,8 @@ services:
     environment:
       - PHPLDAPADMIN_LDAP_HOSTS=openldap
       - PHPLDAPADMIN_HTTPS=false
+    volumes:
+      - phpldapadmin_data:/var/www/phpldapadmin
     depends_on:
       - openldap
     networks:
@@ -126,5 +130,7 @@ volumes:
   wildfly_data:
   es_data:
   samba_data:
+  samba_config:
   ldap_data:
   ldap_config:
+  phpldapadmin_data:
