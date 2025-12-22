@@ -1,0 +1,68 @@
+name: stack03
+services:
+  apache:
+    image: httpd:2.4
+    container_name: stack03_apache
+    depends_on:
+      - tomcat
+    ports:
+      - "8080:80"
+    volumes:
+      - ./apache/httpd.conf:/usr/local/apache2/conf/httpd.conf:ro
+    networks:
+      - stack03_network
+
+  tomcat:
+    build:
+      context: ./tomcat
+    image: stack03/tomcat:8.5
+    container_name: stack03_tomcat
+    environment:
+      - JAVA_OPTS=-Xms256m -Xmx512m
+    ports:
+      - "8081:8080"
+    networks:
+      - stack03_network
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.6.2
+    container_name: stack03_elasticsearch
+    environment:
+      - discovery.type=single-node
+      - cluster.name=stack03-es
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    ports:
+      - "9200:9200"
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+    networks:
+      - stack03_network
+
+  samba-ad:
+    image: nowsci/samba-domain:latest
+    container_name: stack03_ad
+    hostname: stack03-ad-local
+    privileged: true
+    environment:
+      - DOMAIN=stack03.local
+      - DOMAINPASS=Admin_Password_2025!
+      - DNSFORWARDER=8.8.8.8
+    volumes:
+      - samba_data:/var/lib/samba
+    ports:
+      - "389:389"
+      - "636:636"
+    networks:
+      - stack03_network
+
+networks:
+  stack03_network:
+    driver: bridge
+
+volumes:
+  es_data:
+  samba_data:
