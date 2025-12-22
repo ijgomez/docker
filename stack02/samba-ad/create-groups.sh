@@ -8,18 +8,15 @@ CSV_FILE=${GROUPS_CSV_FILE:-/usr/local/etc/groups.csv}
 DOMAIN_FQDN=${DOMAIN:-stack02.local}
 DOMAIN_DN=$(echo "$DOMAIN_FQDN" | awk -F. '{printf "DC=%s,DC=%s", $1, $2}')
 
-# DN completos para creación de OUs
-OU_GROUPS_DN="OU=Groups,$DOMAIN_DN"
-OU_SECURITY_DN="OU=Security,OU=Groups,$DOMAIN_DN"
-OU_APPLICATIONS_DN="OU=Applications,OU=Security,OU=Groups,$DOMAIN_DN"
-
-# Rutas relativas (sin DC=...) para creación de grupos con --groupou
-OU_APPLICATIONS_REL="OU=Applications,OU=Security,OU=Groups"
-
-# Sub-OU bajo Applications y grupos específicos
-SUB_OU_NAME=${APP_SUB_OU_NAME:-Stack02}
-OU_STACK02_DN="OU=${SUB_OU_NAME},${OU_APPLICATIONS_DN}"
-OU_STACK02_REL="OU=${SUB_OU_NAME},${OU_APPLICATIONS_REL}"
+# Cargar configuración de OUs desde archivo externo
+OU_CONFIG_FILE=${OU_CONFIG_FILE:-/usr/local/etc/ou-config.sh}
+if [ -f "$OU_CONFIG_FILE" ]; then
+  # shellcheck source=/dev/null
+  source "$OU_CONFIG_FILE"
+else
+  echo "Archivo de configuración de OUs no encontrado: $OU_CONFIG_FILE" | tee -a "$LOG_FILE"
+  exit 1
+fi
 
 echo "Esperando que Samba AD esté listo para crear OUs/grupos..." | tee -a "$LOG_FILE"
 for i in $(seq 1 30); do

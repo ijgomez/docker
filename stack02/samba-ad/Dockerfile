@@ -6,6 +6,10 @@ COPY users.csv /usr/local/etc/users.csv
 # Copiar CSV de grupos
 COPY groups.csv /usr/local/etc/groups.csv
 
+# Copiar configuración de OUs
+COPY ou-config.sh /usr/local/etc/ou-config.sh
+RUN chmod +x /usr/local/etc/ou-config.sh
+
 # Copiar script de creación de usuarios
 COPY create-users.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/create-users.sh
