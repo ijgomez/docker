@@ -59,6 +59,21 @@ services:
     networks:
       - stack03_network
 
+  oracle:
+    image: gvenzl/oracle-free:latest
+    container_name: stack03_oracle
+    environment:
+      - ORACLE_PASSWORD=Oracle_Password_2025!
+      - APP_USER=appuser
+      - APP_USER_PASSWORD=AppUser_Password_2025!
+    ports:
+      - "1521:1521"
+      - "5500:5500"
+    volumes:
+      - oracle_data:/opt/oracle/oradata
+    networks:
+      - stack03_network
+
 networks:
   stack03_network:
     driver: bridge
@@ -66,3 +81,4 @@ networks:
 volumes:
   es_data:
   samba_data:
+  oracle_data:

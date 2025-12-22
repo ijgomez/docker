@@ -5,6 +5,7 @@ Stack de ejemplo que contiene:
 - `tomcat` (Tomcat 8.5, JDK 8)
 - `elasticsearch` (Elasticsearch 7.6.2)
 - `samba-ad` (Active Directory basado en Samba)
+- `oracle` (Oracle Database Free)
 
 Ver la documentación general del repositorio en `../README.md`.
 
@@ -25,6 +26,7 @@ docker compose up -d --build
 - Tomcat: http://localhost:8081
 - Elasticsearch: http://localhost:9200
 - Active Directory (Samba AD): ldap://localhost:389 (LDAPS 636)
+- Oracle DB: host `localhost`, puerto `1521` (EM Express `5500`)
 
 ## Servicios definidos en el stack
 
@@ -48,6 +50,12 @@ docker compose up -d --build
   - Dominio: `stack03.local` (credencial admin por variable `DOMAINPASS`).
   - Puertos: `389/636` expuestos en el host.
   - Volumen: `samba_data`.
+
+- `oracle`:
+  - Imagen: `gvenzl/oracle-free:latest`.
+  - Puertos: `1521` (SQL*Net) y `5500` (EM Express) expuestos en el host.
+  - Volumen: `oracle_data` para datos.
+  - Credenciales por defecto: `ORACLE_PASSWORD=Oracle_Password_2025!`, usuario app: `appuser` / `AppUser_Password_2025!`.
 
 ## Scripts
 - `start.sh`: levanta y (si aplica) reconstruye servicios.
