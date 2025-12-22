@@ -12,7 +12,7 @@ services:
       - ./apache/httpd.conf:/usr/local/apache2/conf/httpd.conf:ro
       - ./logs/apache:/usr/local/apache2/logs
     networks:
-      - stack02_network
+      - network
 
   # --- WILDFLY/JBOSS ---
   wildfly:
@@ -33,7 +33,7 @@ services:
       - ./logs/wildfly:/apps/stack02/wildfly/standalone/log
       - wildfly_data:/apps/stack02/wildfly/standalone/configuration
     networks:
-      - stack02_network
+      - network
 
   # --- ELASTICSEARCH ---
   elasticsearch:
@@ -53,7 +53,7 @@ services:
       - es_data:/usr/share/elasticsearch/data
       - ./logs/elasticsearch:/usr/share/elasticsearch/logs
     networks:
-      - stack02_network
+      - network
 
   # --- ACTIVE DIRECTORY ---
   samba-ad:
@@ -76,7 +76,7 @@ services:
       - "389:389"        # LDAP
       - "636:636"        # LDAPS
     networks:
-      - stack02_network
+      - network
 
   # --- LDAP ---
   openldap:
@@ -104,7 +104,7 @@ services:
       - ./openldap/seed:/container/service/slapd/assets/config/bootstrap/ldif/custom:ro
       - ./openldap/schema:/container/service/slapd/assets/config/bootstrap/schema/custom:ro
     networks:
-      - stack02_network
+      - network
 
   # --- LDAP ADMIN ---
   phpldapadmin:
@@ -116,10 +116,10 @@ services:
     depends_on:
       - openldap
     networks:
-      - stack02_network
+      - network
 
 networks:
-  stack02_network:
+  network:
     driver: bridge
 
 volumes:
