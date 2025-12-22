@@ -23,6 +23,21 @@ if ! samba-tool user list >/dev/null 2>&1; then
   exit 1
 fi
 
+# Asegurar que los grupos de Apps existen (App y App_Users) antes de añadir miembros
+ensure_group() {
+  local dn="$1"
+  local name
+  name=$(echo "$dn" | sed -n 's/^[cC][nN]=\([^,]*\).*/\1/p')
+  [ -z "$name" ] && return
+  if ! samba-tool group show "$name" >/dev/null 2>&1; then
+    echo "Creando grupo faltante $name (DN: $dn)" | tee -a "$LOG_FILE"
+    samba-tool group add "$name" --groupou "OU=Applications,OU=Security,OU=Groups" >> "$LOG_FILE" 2>&1 || true
+  fi
+}
+
+ensure_group "CN=App,OU=Stack02,OU=Applications,OU=Security,OU=Groups,$DOMAIN_DN"
+ensure_group "CN=App_Users,OU=Applications,OU=Security,OU=Groups,$DOMAIN_DN"
+
 if [ ! -f "$CSV_FILE" ]; then
   echo "Archivo CSV no encontrado: $CSV_FILE" | tee -a "$LOG_FILE"
   exit 1
@@ -68,18 +83,22 @@ tail -n +2 "$CSV_FILE" | while IFS=';' read -r userId password displayName name 
     continue
   fi
 
-  # Añadir usuario a grupo si memberOf está definido
+  # Añadir usuario a grupos si memberOf está definido (soporta múltiples DN separados por '|')
   if [ -n "$memberOf" ]; then
-    # Extraer el CN del DN (ej: cn=App,ou=... -> App)
-    groupName=$(echo "$memberOf" | sed -n 's/^[cC][nN]=\([^,]*\).*/\1/p')
-    if [ -n "$groupName" ]; then
-      echo "Añadiendo $userId al grupo $groupName (DN: $memberOf)..." | tee -a "$LOG_FILE"
-      if samba-tool group addmembers "$groupName" "$userId" >> "$LOG_FILE" 2>&1; then
-        echo "✓ Usuario $userId añadido al grupo $groupName" | tee -a "$LOG_FILE"
-      else
-        echo "! Error añadiendo $userId al grupo $groupName" | tee -a "$LOG_FILE"
+    IFS='|' read -r -a groups <<< "$memberOf"
+    for dn in "${groups[@]}"; do
+      dn_trim=$(echo "$dn" | xargs)
+      [ -z "$dn_trim" ] && continue
+      groupName=$(echo "$dn_trim" | sed -n 's/^[cC][nN]=\([^,]*\).*/\1/p')
+      if [ -n "$groupName" ]; then
+        echo "Añadiendo $userId al grupo $groupName (DN: $dn_trim)..." | tee -a "$LOG_FILE"
+        if samba-tool group addmembers "$groupName" "$userId" >> "$LOG_FILE" 2>&1; then
+          echo "✓ Usuario $userId añadido al grupo $groupName" | tee -a "$LOG_FILE"
+        else
+          echo "! Error añadiendo $userId al grupo $groupName" | tee -a "$LOG_FILE"
+        fi
       fi
-    fi
+    done
   fi
 done
 

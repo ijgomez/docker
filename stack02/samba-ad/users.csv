@@ -1,2 +1,3 @@
 userId;password;displayName;name;mail;memberOf
 ijgomez;ijgomez_Password_2025!;Ijgomez User;Ijgomez;ijgomez@stack02.local;cn=App,ou=Stack02,ou=Applications,ou=Security,ou=Groups,dc=stack02,dc=local
+asmith;asmith_Password_2025!;Alice Smith;Alice;asmith@stack02.local;cn=App,ou=Stack02,ou=Applications,ou=Security,ou=Groups,dc=stack02,dc=local|CN=App_Users,OU=Applications,OU=Security,OU=Groups,DC=stack02,DC=local
