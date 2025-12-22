@@ -1,0 +1,2 @@
+userId;password;displayName;name;mail;memberOf
+ijgomez;ijgomez_Password_2025!;Ijgomez User;Ijgomez;ijgomez@stack02.local;cn=App,ou=Stack02,ou=Applications,ou=Security,ou=Groups,dc=stack02,dc=local

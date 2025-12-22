@@ -1,5 +1,8 @@
 FROM nowsci/samba-domain
 
+# Copiar CSV de usuarios
+COPY users.csv /usr/local/etc/users.csv
+
 # Copiar script de creación de usuarios
 COPY create-users.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/create-users.sh
