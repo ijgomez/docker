@@ -1,0 +1,85 @@
+name: stack04
+services:
+  apache:
+    image: httpd:2.4
+    container_name: stack04_apache
+    depends_on:
+      - tomcat
+    ports:
+      - "8080:80"
+    volumes:
+      - ./apache/httpd.conf:/usr/local/apache2/conf/httpd.conf:ro
+    networks:
+      - stack04_network
+
+  tomcat:
+    build:
+      context: ./tomcat
+    image: stack04/tomcat:8.5
+    container_name: stack04_tomcat
+    environment:
+      - JAVA_OPTS=-Xms256m -Xmx512m
+    ports:
+      - "8081:8080"
+    networks:
+      - stack04_network
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.6.2
+    container_name: stack04_elasticsearch
+    environment:
+      - discovery.type=single-node
+      - cluster.name=stack04-es
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    ports:
+      - "9200:9200"
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+    networks:
+      - stack04_network
+
+  samba-ad:
+    image: nowsci/samba-domain:latest
+    container_name: stack04_ad
+    hostname: stack04-ad-local
+    privileged: true
+    environment:
+      - DOMAIN=stack04.local
+      - DOMAINPASS=Admin_Password_2025!
+      - DNSFORWARDER=8.8.8.8
+    volumes:
+      - samba_data:/var/lib/samba
+    ports:
+      - "389:389"
+      - "636:636"
+    networks:
+      - stack04_network
+
+  mysql:
+    image: mysql:8.4
+    container_name: stack04_mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=Root_Password_2025!
+      - MYSQL_DATABASE=appdb
+      - MYSQL_USER=appuser
+      - MYSQL_PASSWORD=AppUser_Password_2025!
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    command: ["--default-authentication-plugin=mysql_native_password"]
+    networks:
+      - stack04_network
+
+networks:
+  stack04_network:
+    driver: bridge
+
+volumes:
+  es_data:
+  samba_data:
+  mysql_data:
