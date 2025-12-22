@@ -29,9 +29,13 @@ ensure_group() {
   local name
   name=$(echo "$dn" | sed -n 's/^[cC][nN]=\([^,]*\).*/\1/p')
   [ -z "$name" ] && return
+  local ou_rel
+  ou_rel=$(echo "$dn" | sed -n 's/^[cC][nN]=[^,]*,//p')
+  # Strip domain if viene completo
+  ou_rel=$(echo "$ou_rel" | sed "s/,$DOMAIN_DN$//I")
   if ! samba-tool group show "$name" >/dev/null 2>&1; then
     echo "Creando grupo faltante $name (DN: $dn)" | tee -a "$LOG_FILE"
-    samba-tool group add "$name" --groupou "OU=Applications,OU=Security,OU=Groups" >> "$LOG_FILE" 2>&1 || true
+    samba-tool group add "$name" --groupou "$ou_rel" >> "$LOG_FILE" 2>&1 || true
   fi
 }
 
@@ -55,32 +59,33 @@ tail -n +2 "$CSV_FILE" | while IFS=';' read -r userId password displayName name 
 
   [ -z "$userId" ] && continue
 
+  user_exists=0
   if samba-tool user show "$userId" >/dev/null 2>&1; then
-    echo "Usuario $userId ya existe, omitiendo." | tee -a "$LOG_FILE"
-    continue
-  fi
+    echo "Usuario $userId ya existe, actualizando membresías." | tee -a "$LOG_FILE"
+    user_exists=1
+  else
+    echo "Creando usuario $userId..." | tee -a "$LOG_FILE"
+    success=0
+    for i in {1..5}; do
+      echo "Intento $i: creando $userId" | tee -a "$LOG_FILE"
+      if samba-tool user create "$userId" "$password" \
+        --given-name="$name" \
+        --surname='User' \
+        --mail-address="$mail" \
+        >> "$LOG_FILE" 2>&1; then
+        echo "✓ Usuario $userId creado exitosamente" | tee -a "$LOG_FILE"
+        success=1
+        break
+      else
+        echo "! Intento $i falló, reintentando en 10s..." | tee -a "$LOG_FILE"
+        sleep 10
+      fi
+    done
 
-  echo "Creando usuario $userId..." | tee -a "$LOG_FILE"
-  success=0
-  for i in {1..5}; do
-    echo "Intento $i: creando $userId" | tee -a "$LOG_FILE"
-    if samba-tool user create "$userId" "$password" \
-      --given-name="$name" \
-      --surname='User' \
-      --mail-address="$mail" \
-      >> "$LOG_FILE" 2>&1; then
-      echo "✓ Usuario $userId creado exitosamente" | tee -a "$LOG_FILE"
-      success=1
-      break
-    else
-      echo "! Intento $i falló, reintentando en 10s..." | tee -a "$LOG_FILE"
-      sleep 10
+    if [ "$success" -ne 1 ]; then
+      echo "No se pudo crear $userId tras múltiples intentos" | tee -a "$LOG_FILE"
+      continue
     fi
-  done
-
-  if [ "$success" -ne 1 ]; then
-    echo "No se pudo crear $userId tras múltiples intentos" | tee -a "$LOG_FILE"
-    continue
   fi
 
   # Añadir usuario a grupos si memberOf está definido (soporta múltiples DN separados por '|')

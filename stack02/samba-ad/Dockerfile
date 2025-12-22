@@ -3,6 +3,9 @@ FROM nowsci/samba-domain
 # Copiar CSV de usuarios
 COPY users.csv /usr/local/etc/users.csv
 
+# Copiar CSV de grupos
+COPY groups.csv /usr/local/etc/groups.csv
+
 # Copiar script de creación de usuarios
 COPY create-users.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/create-users.sh
@@ -19,9 +22,9 @@ path = Path('/init.sh')
 text = path.read_text()
 
 hook = (
-	"# Ejecutar scripts de creación en background\n"
-	"/usr/local/bin/create-users.sh &\n"
-	"/usr/local/bin/create-groups.sh &\n"
+	"# Ejecutar scripts de creación (grupos primero para evitar carreras)\n"
+	"/usr/local/bin/create-groups.sh\n"
+	"/usr/local/bin/create-users.sh\n"
 )
 needle = "appStart ${FIRSTRUN}\n"
 

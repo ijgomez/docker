@@ -58,7 +58,8 @@ Aquí tienes un resumen de los servicios que define `docker-compose.yml` en este
 	- Build: `./samba-ad` (Dockerfile personalizado basado en `nowsci/samba-domain`).
 	- Dominio: `stack02.local`.
 	- Credenciales: `administrator@stack02.local` / `Admin_Password_2025!` (variable para contraseña: `DOMAINPASS`).
-	- Usuarios creados al arrancar: `Administrator` y `ijgomez` (`ijgomez_Password_2025!`). El script se ejecuta en el contenedor y loguea en `/var/log/create-users.log`.
+	- Usuarios creados al arrancar: `Administrator` y los definidos en `samba-ad/users.csv` (`/var/log/create-users.log`).
+	- Grupos creados al arrancar: definidos en `samba-ad/groups.csv` (`/var/log/create-groups.log`).
 	- Puertos: `389` (LDAP) y `636` (LDAPS) expuestos en el host.
     - Requiere cifrado: usa StartTLS sobre ldap:`389` o ldaps:`636` (certificado autofirmado).
 	- Volumen: `samba_data` para la base de datos del dominio.
@@ -140,3 +141,10 @@ docker exec -i stack02_ad samba-tool user create nuevo_usuario \
 ```
 
 Luego conéctate con las credenciales definidas usando StartTLS en Apache Directory Studio.
+
+### Provisionar usuarios y grupos vía CSV
+
+- Usuarios: `stack02/samba-ad/users.csv` (cabecera `userId;password;displayName;name;mail;memberOf`).
+- Grupos: `stack02/samba-ad/groups.csv` (cabecera `name;ou;description`).
+- Si necesitas usar otras rutas dentro del contenedor, puedes sobrescribir con las variables `USERS_CSV_FILE` y `GROUPS_CSV_FILE`.
+

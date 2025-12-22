@@ -1,0 +1,5 @@
+name;ou;description
+App_Admins;OU=Applications,OU=Security,OU=Groups;Administradores de aplicaciones
+App_Users;OU=Applications,OU=Security,OU=Groups;Usuarios de aplicaciones
+App_Systems;OU=Applications,OU=Security,OU=Groups;Sistemas de aplicaciones
+App;OU=Stack02,OU=Applications,OU=Security,OU=Groups;Grupo principal Stack02
