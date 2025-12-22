@@ -58,6 +58,20 @@ services:
     networks:
       - stack05_network
 
+  sql-edge:
+    image: mcr.microsoft.com/azure-sql-edge:latest
+    container_name: stack05_sql_edge
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=SqlEdge_Password_2025!
+      - MSSQL_PID=Developer
+    ports:
+      - "1433:1433"
+    volumes:
+      - sql_edge_data:/var/opt/mssql
+    networks:
+      - stack05_network
+
 networks:
   stack05_network:
     driver: bridge
@@ -65,3 +79,4 @@ networks:
 volumes:
   samba_data:
   ftp_data:
+  sql_edge_data:

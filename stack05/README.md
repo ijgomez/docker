@@ -5,6 +5,7 @@ Stack de ejemplo que contiene:
 - `tomcat` (Tomcat 9, JDK 8)
 - `samba-ad` (Active Directory basado en Samba)
 - `ftp` (servidor FTP `fauria/vsftpd`)
+- `sql-edge` (Azure SQL Edge)
 
 Ver la documentación general del repositorio en `../README.md`.
 
@@ -25,6 +26,7 @@ docker compose up -d --build
 - Tomcat: http://localhost:8081
 - Active Directory (Samba AD): ldap://localhost:389 (LDAPS 636)
 - FTP: host `localhost`, puerto `21`, pasivos `21100-21110`
+- SQL Edge: host `localhost`, puerto `1433`
 
 Credenciales FTP por defecto:
 - `FTP_USER=ftpuser`
@@ -51,6 +53,12 @@ Credenciales FTP por defecto:
   - Imagen: `fauria/vsftpd`.
   - Puertos: `21` y `21100-21110` expuestos en el host.
   - Volumen: `ftp_data` para datos.
+
+- `sql-edge`:
+  - Imagen: `mcr.microsoft.com/azure-sql-edge:latest`.
+  - Puertos: `1433` expuesto en el host.
+  - Volumen: `sql_edge_data` para datos.
+  - Credenciales por defecto: `SA` / `SqlEdge_Password_2025!` (`MSSQL_SA_PASSWORD`).
 
 ## Scripts
 - `start.sh`: levanta y (si aplica) reconstruye servicios.
