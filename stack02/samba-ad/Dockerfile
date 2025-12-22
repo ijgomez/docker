@@ -1,20 +1,25 @@
 FROM nowsci/samba-domain
 
-ARG DOMAIN
-ARG DOMAINPASS
-
 # Copiar script de creación de usuarios
 COPY create-users.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/create-users.sh
 
-# Inyectar la ejecución del script antes de appStart en /init.sh
+# Copiar script de creación de grupos
+COPY create-groups.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/create-groups.sh
+
+# Inyectar la ejecución de los scripts antes de appStart en /init.sh
 RUN python3 - <<'PY'
 from pathlib import Path
 
 path = Path('/init.sh')
 text = path.read_text()
 
-hook = "# Ejecutar script de creación de usuarios en background\n/usr/local/bin/create-users.sh &\n"
+hook = (
+	"# Ejecutar scripts de creación en background\n"
+	"/usr/local/bin/create-users.sh &\n"
+	"/usr/local/bin/create-groups.sh &\n"
+)
 needle = "appStart ${FIRSTRUN}\n"
 
 # Evita duplicados del hook
