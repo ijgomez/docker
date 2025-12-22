@@ -4,50 +4,29 @@ Repository with several Docker stacks and examples.
 ## Stacks
 
 ### Stack01
-- **Descripción**: Stack compuesto por `apache` (Apache actúa como reverse proxy hacia WildFly), `wildfly` y `postgres`.
+- **Descripción**: Stack compuesto por `apache`, `wildfly` y `postgres`.
 - **Ubicación**: `stack01/`.
 
 ### Stack02
-- **Descripción**: Stack compuesto por `apache` (Apache actúa como reverse proxy hacia WildFly), `wildfly`, `elasticsearch`, `openldap` y `phpldapadmin`.
+- **Descripción**: Stack compuesto por `apache`, `wildfly`, `elasticsearch`, `openldap` , `samba-ad` y `phpldapadmin`.
 - **Ubicación**: `stack02/`.
 
-## Comandos útiles (Docker)
+### Stack03
+- **Descripción**: Stack compuesto por `apache`, `tomcat`, `elasticsearch` y `samba-ad` como Active Directory.
+- **Ubicación**: `stack03/`.
 
-Aquí tienes comandos prácticos para gestionar builders, cachés e imágenes cuando trabajas con Docker y `buildx`:
+### Stack04
+- **Descripción**: Stack compuesto por `apache`, `tomcat`, `elasticsearch`, `samba-ad` y `mysql`.
+- **Ubicación**: `stack04/`.
 
-- Listar builders de `buildx`:
+### Stack05
+- **Descripción**: Stack compuesto por `nginx`, `tomcat`, `samba-ad` y un servidor `ftp` (`fauria/vsftpd`).
+- **Ubicación**: `stack05/`.
 
-```bash
-docker buildx ls
-```
-
-- Eliminar un builder de `buildx` (o todos, según versión):
-
-```bash
-docker buildx rm <builder-name>
-# o
-docker buildx rm --all
-```
-
-- Limpiar la caché del builder:
-
-```bash
-docker builder prune -f
-```
-
-- Limpieza general de recursos no usados (ejemplos):
-
-```bash
-docker image prune -af         # elimina imágenes no referenciadas
-docker container prune -f      # elimina contenedores parados
-docker volume prune -f         # elimina volúmenes no usados
-```
-
-Usa estos comandos con precaución en entornos de producción: revisa qué vas a eliminar antes de ejecutar `-f`.
 
 ## Script de limpieza: `clean.sh`
 
-He añadido un script conveniente en la raíz del repositorio llamado `clean.sh` que automatiza la limpieza de recursos Docker no usados.
+Script conveniente en la raíz del repositorio llamado `clean.sh` que automatiza la limpieza de recursos Docker no usados.
 
 - **Ubicación:** `./clean.sh`
 - **Propósito:** eliminar contenedores parados, imágenes huérfanas, redes y volúmenes no usados; limpiar cachés de build y `buildx`; y —si encuentra proyectos con `docker-compose.yml`/`docker-compose.yaml`— ejecutar `docker compose down --rmi all --volumes` en esos directorios para bajarlos limpiamente.
