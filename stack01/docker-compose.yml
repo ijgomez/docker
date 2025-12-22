@@ -1,21 +1,22 @@
 name: stack01
 services:
-  postgres:
-    build: ./postgres
-    container_name: stack01_postgres
-    environment:
-      POSTGRES_DB: appdb
-      POSTGRES_USER: appuser
-      POSTGRES_PASSWORD: apppass
-      # Si usas Docker Secrets, el wrapper leerá /run/secrets/postgres_password
+  # --- APACHE HTTP ---
+  apache:
+    image: httpd:2.4
+    container_name: stack01_apache
+    depends_on:
+      - wildfly
     ports:
-      - "5432:5432"
+      - "80:80"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./postgres/initdb:/docker-entrypoint-initdb.d:ro
+      - ./apache/httpd.conf:/usr/local/apache2/conf/httpd.conf
+    networks:
+      - network
 
+  # --- WILDFLY/JBOSS ---
   wildfly:
     build: ./wildfly
+    image: stack01/wildfly:latest
     container_name: stack01_wildfly
     depends_on:
       - postgres
@@ -35,17 +36,30 @@ services:
       - wildfly_logs:/opt/wildfly/standalone/log
       - wildfly_tmp:/opt/wildfly/standalone/tmp
       - wildfly_data:/opt/wildfly/standalone/data
-
-
-  apache:
-    image: httpd:2.4
-    container_name: stack01_apache
-    depends_on:
-      - wildfly
+    networks:
+      - network
+  
+  # --- POSTGRESQL ---
+  postgres:
+    build: ./postgres
+    image: stack01/postgres:latest
+    container_name: stack01_postgres
+    environment:
+      POSTGRES_DB: appdb
+      POSTGRES_USER: appuser
+      POSTGRES_PASSWORD: apppass
+      # Si usas Docker Secrets, el wrapper leerá /run/secrets/postgres_password
     ports:
-      - "80:80"
+      - "5432:5432"
     volumes:
-      - ./apache/httpd.conf:/usr/local/apache2/conf/httpd.conf
+      - postgres_data:/var/lib/postgresql/data
+      - ./postgres/initdb:/docker-entrypoint-initdb.d:ro
+    networks:
+      - network
+
+networks:
+  network:
+    driver: bridge
 
 volumes:
   postgres_data:

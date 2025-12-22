@@ -1,66 +1,82 @@
 # Stack01
 
-Descripción: Stack compuesto por `postgres`, `wildfly` y `apache`. Apache actúa como reverse proxy hacia WildFly.
+Stack de ejemplo que contiene:
+- `apache` (Apache 2.4)
+- `wildfly` (WildFly 11.0.0.Final)
+- `postgres` (Postgres 14)
 
 Ver la documentación general del repositorio en `../README.md`.
 
-**Requisitos**
+## Requisitos
 - Docker y Docker Compose (v1 o v2).
 
-**Contenido del stack**
-- `postgres` (imagen `postgres:14`) — puerto `5432:5432` — volumen `postgres_data:/var/lib/postgresql/data`.
-- `wildfly` (build en `./wildfly`) — puertos `8080:8080` y `9990:9990`.
-- `apache` (imagen `httpd:2.4`) — puerto `80:80` — monta `./apache/httpd.conf` que proxifica hacia WildFly.
+## Levantar el stack
 
-**Comandos rápidos**
-- Levantar el stack:
+Desde el directorio `stack01` ejecuta:
 
 ```bash
-./start.sh
-# o desde la raíz:
-docker compose -f stack01/docker-compose.yml up -d --build
+docker compose up -d --build
+o
+./stack01/start.sh
 ```
 
-- Parar el stack:
+## Accesos
+
+- Apache: http://localhost (proxy a WildFly)
+- WildFly: http://localhost:8080
+- WildFly Management: http://localhost:9990
+
+## Servicios definidos en el stack
+
+Aquí tienes un resumen de los servicios que define `docker-compose.yml` en este stack:
+
+- `apache`:
+	- Imagen: `httpd:2.4` (configuración en `stack01/apache/httpd.conf`).
+	- Función: reverse-proxy hacia `wildfly` en `http://wildfly:8080`.
+	- Puertos: `80` expuesto en el host.
+
+- `wildfly`:
+	- Imagen: `stack01-wildfly:latest`.
+	- Puertos: `8080` (app) y `9990` (management).
+  - Volumen: `wildfly_data` montado en `/opt/wildfly/standalone` para persistencia de configuración/temporal/logs.
+  - Credenciales (por defecto) para entrar en la consola de administración (management): `admin` / `Admin.1234`.
+
+- `postgres`:
+	- Imagen: `postgres:14`.
+
+## Scripts
+
+Hay tres scripts convenientes en la raíz de `stack01` para controlar el stack sin teclear comandos largos:
+
+- `start.sh`: Reconstruye (si hace falta) y arranca todos los servicios.
+- `stop.sh`: Para y elimina los contenedores del stack (`docker compose down`).
+- `rebuild.sh`: Reconstruye las imágenes (total o servicios específicos) y levanta los servicios.
+
+Ejemplos de uso (ejecutar desde `stack01`):
 
 ```bash
-./stop.sh
-# o
-docker compose -f stack01/docker-compose.yml down
+./start.sh               # reconstruye y levanta todo el stack
+./stop.sh                # para y elimina los contenedores del stack
+./rebuild.sh             # reconstruye todas las imágenes y levanta
+./rebuild.sh wildfly     # reconstruye y levanta solo el servicio 'wildfly'
+./rebuild.sh wildfly postgres  # reconstruye y levanta solo wildfly y postgres
+./start-containers.sh        # inicia todos los contenedores ya creados
+./start-containers.sh wildfly # inicia solo el servicio wildfly (si existe)
+./stop-containers.sh         # para todos los contenedores del stack (no los elimina)
+./stop-containers.sh wildfly  # para solo wildfly
 ```
 
-- Reiniciar sólo Apache (después de cambiar `httpd.conf`):
+Estas utilidades facilitan el flujo de trabajo local.
 
-```bash
-cd stack01 && docker compose restart apache
-```
+## Notas
 
-**Puertos**
-- Apache (frontend): `http://localhost:80` → proxifica a WildFly.
-- WildFly (app): `http://localhost:8080`.
-- WildFly (management): `http://localhost:9990`.
-- Postgres: `localhost:5432`.
+- El `docker-compose.yml` de este stack no usa la clave `version`.
+- WildFly se construye desde `stack01/wildfly/Dockerfile`. Ajusta el Dockerfile si necesitas módulos adicionales.
+- Los datos de Postgres se almacenan en el volumen `postgres_data`.
 
-**Archivos importantes**
-- `docker-compose.yml` — definición del stack.
-- `apache/httpd.conf` — configuración del proxy hacia WildFly.
-- `start.sh`, `stop.sh` — scripts convenientes que detectan `docker compose` o `docker-compose`.
 
-**Cómo contribuir / desarrollo**
-- Código de la aplicación en WildFly:
-  - Modifica la fuente en el directorio que alimenta el `Dockerfile` de `wildfly` (revisa `stack01/wildfly`).
-  - Reconstruye sólo `wildfly` tras cambios:
 
-```bash
-docker compose -f stack01/docker-compose.yml up -d --build wildfly
-```
-
-- Cambios en Apache:
-  - Edita `stack01/apache/httpd.conf` y luego reinicia `apache`:
-
-```bash
-cd stack01 && docker compose restart apache
-```
+### Base de Datos
 
 - Base de datos (esquema / datos iniciales): sigue las instrucciones del apartado siguiente.
 
@@ -79,7 +95,7 @@ CREATE TABLE example (
 INSERT INTO example (name) VALUES ('alpha'), ('bravo');
 SQL
 
-# Ejecutar (desde la raíz del repo o donde esté el archivo):
+##Ejecutar (desde la raíz del repo o donde esté el archivo):
 docker exec -i postgres psql -U appuser -d appdb < init-data.sql
 ```
 
@@ -99,13 +115,13 @@ Ejemplo de mount (fragmento):
 
 Después, `docker compose up` ejecutará los scripts en `/docker-entrypoint-initdb.d` la primera vez que el contenedor crea la base de datos.
 
-**Depuración y logs**
+### Depuración y logs
 - Ver logs de cada contenedor:
 
 ```bash
-docker logs -f postgres
-docker logs -f wildfly
 docker logs -f apache
+docker logs -f wildfly
+docker logs -f postgres
 ```
 
 - Si necesitas entrar a la base de datos para comprobar tablas:
@@ -113,57 +129,7 @@ docker logs -f apache
 ```bash
 docker exec -it postgres psql -U appuser -d appdb
 ```
-
-**Comandos útiles**
-- **Levantar el stack** (raíz):
-
-```bash
-./stack01/start.sh
-# o
-docker compose -f stack01/docker-compose.yml up -d --build
-```
-
-- **Reconstruir solo WildFly** (desarrollo):
-
-```bash
-cd stack01
-docker compose up -d --build wildfly
-```
-
-- **Reiniciar Apache** (después de cambiar `httpd.conf`):
-
-```bash
-cd stack01 && docker compose restart apache
-```
-
-- **Reconstruir y levantar (script):**
-
-```bash
-./rebuild.sh        # reconstruye todo el stack y lo levanta
-./rebuild.sh wildfly postgres  # reconstruye y levanta solo wildfly y postgres
-```
-
-- **Iniciar contenedores sin recrear**:
-
-```bash
-./start-containers.sh        # inicia todos los contenedores ya creados
-./start-containers.sh wildfly # inicia solo el servicio wildfly (si existe)
-```
-
-- **Parar contenedores sin eliminarlos**:
-
-```bash
-./stop-containers.sh         # para todos los contenedores del stack (no los elimina)
-./stop-containers.sh wildfly  # para solo wildfly
-```
-
-- **Ver logs en tiempo real**:
-
-```bash
-docker logs -f wildfly
-docker logs -f postgres
-docker logs -f apache
-```
+### Wildfly / JBoss CLI
 
 - **Crear usuario admin (helper)**:
 
