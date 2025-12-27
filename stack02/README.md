@@ -110,7 +110,66 @@ Estas utilidades facilitan el flujo de trabajo local
 
 ## Configuración SSL/HTTPS
 
-Apache y WildFly están configurados para aceptar conexiones HTTPS además de HTTP usando certificados autofirmados que se generan automáticamente al construir las imágenes.
+Apache y WildFly están configurados para aceptar conexiones HTTPS además de HTTP. Tienes tres opciones para los certificados:
+
+| Opción | Herramienta | Confiable | Ventajas | Desventajas |
+|--------|-------------|-----------|----------|-------------|
+| **1. mkcert** | `mkcert` | ✅ Sí | Automático, sin configuración manual | Requiere instalar mkcert |
+| **2. CA propia** | `openssl` | ✅ Sí* | Sin dependencias externas | Requiere importar CA manualmente |
+| **3. Autofirmado** | Automático | ❌ No | Sin configuración previa | Advertencias en navegador |
+
+*Requiere importar la CA en el navegador
+
+### Opción 1: Certificados confiables con mkcert (Recomendado)
+
+Para evitar advertencias de seguridad en el navegador, usa `mkcert` para generar certificados confiables:
+
+**Instalación de mkcert:**
+```bash
+# macOS
+brew install mkcert nss  # nss es para Firefox
+
+# Linux (Ubuntu/Debian)
+sudo apt install libnss3-tools
+wget https://github.com/FiloSottile/mkcert/releases/download/v1.4.4/mkcert-v1.4.4-linux-amd64
+chmod +x mkcert-v1.4.4-linux-amd64
+sudo mv mkcert-v1.4.4-linux-amd64 /usr/local/bin/mkcert
+
+# Windows
+choco install mkcert
+```
+
+**Generar certificados:**
+```bash
+# 1. Ejecutar el script (instala la CA e genera certificados)
+./generate-trusted-certs.sh
+
+# 2. Reiniciar servicios para aplicar los nuevos certificados
+docker compose restart apache wildfly
+```
+
+Los certificados generados con `mkcert`:
+- ✅ Son automáticamente confiables en Chrome, Firefox, Safari, Edge
+- ✅ No muestran advertencias de seguridad
+- ✅ Válidos para localhost, 127.0.0.1 y ::1
+- ✅ Persisten en el directorio (no se regeneran automáticamente)
+
+### Opción 2: Certificados con CA propia (Sin dependencias externas)
+
+Si no puedes instalar `mkcert`, puedes generar tu propia CA y certificados firmados:
+
+```bash
+./generate-ca-certs.sh
+```
+
+Este script:
+- Genera una CA local en `.ca/`
+- Crea certificados firmados por la CA
+- Requiere importar manualmente la CA en el navegador (ver instrucciones en pantalla)
+
+### Opción 3: Certificados autofirmados (Por defecto)
+
+Si no necesitas que los certificados sean confiables, los contenedores generan certificados autofirmados automáticamente.
 
 ### Generación automática de certificados
 
@@ -201,9 +260,17 @@ Si generas los certificados manualmente, los contenedores los detectarán y usar
 
 Para usar tus propios certificados en producción:
 
-1. **Apache**: Coloca tus certificados en el volumen `apache_certs` o móntalo desde el host
-2. **WildFly**: Coloca tu keystore en el volumen `wildfly_data` antes del primer arranque
-3. Ajusta las configuraciones en `httpd.conf` y el Dockerfile de WildFly según sea necesario
+1. **Apache**: Coloca tus certificados en `./apache/certs/` antes de iniciar los contenedores
+   - `server.crt` - Certificado público
+   - `server.key` - Clave privada
+   
+2. **WildFly**: Coloca tu keystore en `./wildfly/certs/wildfly.keystore` antes de iniciar
+   - El keystore debe estar en formato JKS
+   - Contraseña por defecto: `password` (ajusta en el Dockerfile si es diferente)
+
+3. Si los archivos existen, los contenedores los usarán automáticamente en lugar de generar nuevos
+
+**Nota importante sobre certificados autofirmados**: Los certificados autofirmados muestran advertencias de seguridad en el navegador. Para desarrollo local sin advertencias, usa `mkcert`. Para producción, usa certificados firmados por una CA reconocida (Let's Encrypt, DigiCert, etc.).
 
 ## Notas
 

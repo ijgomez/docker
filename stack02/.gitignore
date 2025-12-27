@@ -5,3 +5,6 @@ certs/
 !certs/.gitkeep
 !*/certs/.gitkeep
 logs/
+
+# Certificados y CA local (desarrollo)
+.ca/
