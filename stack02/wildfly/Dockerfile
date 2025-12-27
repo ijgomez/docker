@@ -43,11 +43,33 @@ end-if,\
 stop-embedded-server" && \
 rm -rf ${JBOSS_HOME}/standalone/configuration/standalone_xml_history
 
-# Copiar el keystore al directorio de configuración
-COPY ./certs/wildfly.keystore ${JBOSS_HOME}/standalone/configuration/
+# Crear directorio para certificados
+RUN mkdir -p /apps/stack02/certs
+
+# Script para generar keystore si no existe
+RUN echo '#!/bin/bash\n\
+KEYSTORE_FILE=/apps/stack02/certs/wildfly.keystore\n\
+CONFIG_KEYSTORE=${JBOSS_HOME}/standalone/configuration/wildfly.keystore\n\
+if [ ! -f "$KEYSTORE_FILE" ]; then\n\
+  echo "Generando keystore SSL para WildFly..."\n\
+  keytool -genkeypair -alias wildfly -keyalg RSA -keysize 2048 \\\n\
+    -validity 365 -keystore "$KEYSTORE_FILE" \\\n\
+    -storepass password -keypass password \\\n\
+    -dname "CN=localhost, OU=IT, O=Stack02, L=Madrid, ST=Madrid, C=ES"\n\
+  echo "Keystore generado en $KEYSTORE_FILE"\n\
+else\n\
+  echo "Keystore SSL ya existe en $KEYSTORE_FILE"\n\
+fi\n\
+# Crear enlace simbólico en el directorio de configuración\n\
+if [ ! -L "$CONFIG_KEYSTORE" ]; then\n\
+  ln -sf "$KEYSTORE_FILE" "$CONFIG_KEYSTORE"\n\
+  echo "Enlace simbólico creado: $CONFIG_KEYSTORE -> $KEYSTORE_FILE"\n\
+fi\n\
+exec ${JBOSS_HOME}/bin/standalone.sh -b 0.0.0.0 -bmanagement 0.0.0.0\n' > /usr/local/bin/wildfly-entrypoint.sh && \
+    chmod +x /usr/local/bin/wildfly-entrypoint.sh
 
 RUN chmod +x ${JBOSS_HOME}/bin/*.sh
 
 EXPOSE 8080 8443 9990
 
-CMD ["/apps/stack02/wildfly/bin/standalone.sh", "-b", "0.0.0.0", "-bmanagement", "0.0.0.0"]
+CMD ["/usr/local/bin/wildfly-entrypoint.sh"]

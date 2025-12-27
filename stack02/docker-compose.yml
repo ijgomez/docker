@@ -2,7 +2,9 @@ name: stack02
 services:
   # --- APACHE HTTP ---
   apache:
-    image: httpd:2.4
+    build:
+      context: ./apache
+    image: stack02/apache:latest
     container_name: stack02_apache
     depends_on:
       - wildfly
@@ -11,7 +13,7 @@ services:
       - "443:443"
     volumes:
       - ./apache/httpd.conf:/usr/local/apache2/conf/httpd.conf:ro
-      - ./apache/certs:/usr/local/apache2/conf/certs:ro
+      - ./certs/apache:/usr/local/apache2/conf/certs
       - ./logs/apache:/usr/local/apache2/logs
     networks:
       - network
@@ -35,6 +37,7 @@ services:
     volumes:
       - ./deployments:/apps/stack02/wildfly/standalone/deployments
       - ./logs/wildfly:/apps/stack02/wildfly/standalone/log
+      - ./certs/wildfly:/apps/stack02/certs
       - wildfly_data:/apps/stack02/wildfly/standalone/configuration
     networks:
       - network

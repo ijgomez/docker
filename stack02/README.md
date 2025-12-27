@@ -110,9 +110,46 @@ Estas utilidades facilitan el flujo de trabajo local
 
 ## Configuración SSL/HTTPS
 
-Apache y WildFly están configurados para aceptar conexiones HTTPS además de HTTP usando certificados autofirmados.
+Apache y WildFly están configurados para aceptar conexiones HTTPS además de HTTP usando certificados autofirmados que se generan automáticamente al construir las imágenes.
 
-### Certificados SSL para Apache
+### Generación automática de certificados
+
+Los certificados SSL se generan automáticamente durante la construcción de las imágenes Docker si no existen:
+
+- **Apache**: Los certificados se generan en el primer arranque y se almacenan en un volumen Docker (`apache_certs`)
+- **WildFly**: El keystore se genera en el primer arranque y se almacena en el volumen `wildfly_data`
+
+No es necesario generar los certificados manualmente. Simplemente ejecuta:
+
+```bash
+./start.sh
+# o
+docker compose up -d --build
+```
+
+### Regenerar certificados
+
+Si necesitas regenerar los certificados (por ejemplo, si han expirado):
+
+1. Elimina los volúmenes que contienen los certificados:
+   ```bash
+   docker compose down -v
+   ```
+
+2. Reconstruye y reinicia los servicios:
+   ```bash
+   ./start.sh
+   ```
+
+Los certificados se generarán automáticamente con una validez de 365 días.
+
+### Generación manual (opcional)
+
+Si prefieres generar los certificados manualmente antes de construir las imágenes, puedes hacerlo:
+
+**Para Apache** (en `apache/certs/`):
+
+Los certificados para Apache se pueden generar manualmente con OpenSSL:
 
 Los certificados para Apache se generan con OpenSSL y se almacenan en `apache/certs/`:
 
@@ -128,9 +165,9 @@ Esto genera:
 - `server.key`: Clave privada
 - `server.crt`: Certificado público
 
-### Keystore para WildFly
+**Para WildFly** (en `wildfly/certs/`):
 
-El keystore para WildFly se genera con `keytool` (incluido en el JDK) y se almacena en `wildfly/certs/`:
+El keystore para WildFly se puede generar manualmente con `keytool` (incluido en el JDK):
 
 ```bash
 cd wildfly/certs
@@ -144,24 +181,17 @@ Esto genera:
 - `wildfly.keystore`: Keystore JKS con el certificado y clave privada
 - Contraseña del keystore: `password`
 
+Si generas los certificados manualmente, los contenedores los detectarán y usarán en lugar de generar nuevos.
+
 **Nota importante**: Los certificados autofirmados son válidos para desarrollo local. El navegador mostrará advertencias de seguridad que puedes aceptar. Para producción, debes usar certificados firmados por una CA reconocida.
 
-### Regenerar certificados
+### Usar certificados propios en producción
 
-Si necesitas regenerar los certificados (por ejemplo, si han expirado):
+Para usar tus propios certificados en producción:
 
-1. Elimina los certificados existentes:
-   ```bash
-   rm apache/certs/*
-   rm wildfly/certs/*
-   ```
-
-2. Ejecuta los comandos anteriores para generar nuevos certificados
-
-3. Reconstruye y reinicia los servicios:
-   ```bash
-   ./rebuild.sh
-   ```
+1. **Apache**: Coloca tus certificados en el volumen `apache_certs` o móntalo desde el host
+2. **WildFly**: Coloca tu keystore en el volumen `wildfly_data` antes del primer arranque
+3. Ajusta las configuraciones en `httpd.conf` y el Dockerfile de WildFly según sea necesario
 
 ## Notas
 
