@@ -51,7 +51,7 @@ Aquí tienes un resumen de los servicios que define `docker-compose.yml` en este
 	- Build: `./wildfly` (`stack02/wildfly/Dockerfile`).
 	- Versión: WildFly 11.0.0.Final sobre Java 11 (Eclipse Temurin).
 	- Puertos: `8080` (HTTP), `8443` (HTTPS) y `9990` (management).
-	- SSL: keystore en `stack02/wildfly/certs/wildfly.keystore`.
+	- SSL: keystore generado automáticamente y almacenado en `wildfly/certs/wildfly.keystore` (visible en el host).
 	- Volumen: `wildfly_data` montado en `/opt/wildfly/standalone` para persistencia de configuración/temporal/logs.
     - Credenciales (por defecto) para entrar en la consola de administración (management): `admin` / `Admin.1234`.
 
@@ -114,10 +114,10 @@ Apache y WildFly están configurados para aceptar conexiones HTTPS además de HT
 
 ### Generación automática de certificados
 
-Los certificados SSL se generan automáticamente durante la construcción de las imágenes Docker si no existen:
+Los certificados SSL se generan automáticamente durante el primer arranque de los contenedores si no existen:
 
-- **Apache**: Los certificados se generan en el primer arranque y se almacenan en un volumen Docker (`apache_certs`)
-- **WildFly**: El keystore se genera en el primer arranque y se almacena en el volumen `wildfly_data`
+- **Apache**: Los certificados se generan y se almacenan en un volumen Docker (`apache_certs`)
+- **WildFly**: El keystore se genera en `/apps/stack02/certs/` dentro del contenedor y se sincroniza con el host en `./wildfly/certs/wildfly.keystore`
 
 No es necesario generar los certificados manualmente. Simplemente ejecuta:
 
@@ -126,6 +126,18 @@ No es necesario generar los certificados manualmente. Simplemente ejecuta:
 # o
 docker compose up -d --build
 ```
+
+### Ubicación de los certificados
+
+Los certificados generados están disponibles en:
+
+- **Apache**: Volumen Docker `apache_certs` (certificados en `/usr/local/apache2/conf/certs/` dentro del contenedor)
+- **WildFly**: Directorio del host `./wildfly/certs/wildfly.keystore` (también accesible en `/apps/stack02/certs/` dentro del contenedor)
+
+El keystore de WildFly es visible desde el host, lo que facilita:
+- Backup de certificados
+- Reemplazo por certificados propios
+- Inspección y gestión de certificados
 
 ### Regenerar certificados
 

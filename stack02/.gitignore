@@ -2,4 +2,6 @@
 deployments/
 config/
 certs/
+!certs/.gitkeep
+!*/certs/.gitkeep
 logs/
