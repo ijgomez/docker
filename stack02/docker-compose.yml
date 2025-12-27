@@ -8,8 +8,10 @@ services:
       - wildfly
     ports:
       - "80:80"
+      - "443:443"
     volumes:
       - ./apache/httpd.conf:/usr/local/apache2/conf/httpd.conf:ro
+      - ./apache/certs:/usr/local/apache2/conf/certs:ro
       - ./logs/apache:/usr/local/apache2/logs
     networks:
       - network
@@ -28,6 +30,7 @@ services:
       - JBOSS_HOME=/apps/stack02/wildfly
     ports:
       - "8080:8080"
+      - "8443:8443"
       - "9990:9990"
     volumes:
       - ./deployments:/apps/stack02/wildfly/standalone/deployments

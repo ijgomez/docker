@@ -1,0 +1,13 @@
+version: 2
+
+# Ignorar certificados y keystores de desarrollo/prueba
+paths-ignore:
+  - apache/certs/**
+  - wildfly/certs/**
+
+# Alternativamente, puedes ignorar tipos específicos de secretos
+# matches-ignore:
+#   - name: RSA Private Key
+#     match: apache/certs/server.key
+#   - name: RSA Private Key
+#     match: wildfly/certs/wildfly.keystore

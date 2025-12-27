@@ -28,11 +28,26 @@ RUN ${JBOSS_HOME}/bin/jboss-cli.sh --commands="\
 embed-server --server-config=standalone.xml,\
 /:write-attribute(name=name, value=${WF_SERVER_NAME}),\
 data-source remove --name=ExampleDS,\
+/subsystem=elytron/key-store=httpsKS:add(path=wildfly.keystore, relative-to=jboss.server.config.dir, credential-reference={clear-text=password}, type=JKS),\
+/subsystem=elytron/key-manager=httpsKM:add(key-store=httpsKS, credential-reference={clear-text=password}),\
+/subsystem=elytron/server-ssl-context=httpsSSC:add(key-manager=httpsKM, protocols=[TLSv1.2]),\
 stop-embedded-server" && \
 rm -rf ${JBOSS_HOME}/standalone/configuration/standalone_xml_history
 
+# Configurar HTTPS listener en un segundo paso
+RUN ${JBOSS_HOME}/bin/jboss-cli.sh --commands="\
+embed-server --server-config=standalone.xml,\
+if (outcome != success) of /subsystem=undertow/server=default-server/https-listener=https:read-resource,\
+/subsystem=undertow/server=default-server/https-listener=https:add(socket-binding=https, ssl-context=httpsSSC, enable-http2=true),\
+end-if,\
+stop-embedded-server" && \
+rm -rf ${JBOSS_HOME}/standalone/configuration/standalone_xml_history
+
+# Copiar el keystore al directorio de configuración
+COPY ./certs/wildfly.keystore ${JBOSS_HOME}/standalone/configuration/
+
 RUN chmod +x ${JBOSS_HOME}/bin/*.sh
 
-EXPOSE 8080 9990
+EXPOSE 8080 8443 9990
 
 CMD ["/apps/stack02/wildfly/bin/standalone.sh", "-b", "0.0.0.0", "-bmanagement", "0.0.0.0"]

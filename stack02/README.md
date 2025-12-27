@@ -24,10 +24,15 @@ docker compose up -d --build
 
 ## Accesos
 
-- Apache: http://localhost (proxy a WildFly y PhpLDAPAdmin)
-- PhpLDAPAdmin  : http://localhost/ldapadmin
-- WildFly: http://localhost:8080
+### HTTP y HTTPS
+- Apache HTTP: http://localhost (proxy a WildFly y PhpLDAPAdmin)
+- Apache HTTPS: https://localhost
+- PhpLDAPAdmin: http://localhost/ldapadmin o https://localhost/ldapadmin
+- WildFly HTTP: http://localhost:8080
+- WildFly HTTPS: https://localhost:8443
 - WildFly Management: http://localhost:9990
+
+### Otros servicios
 - Elasticsearch: http://localhost:9200
 - OpenLDAP: `ldap://localhost:5389` (LDAPS en 5636)
 - Active Directory (Samba AD DC): `ldap://localhost:389` (LDAPS en 636)
@@ -39,12 +44,14 @@ Aquí tienes un resumen de los servicios que define `docker-compose.yml` en este
 - `apache`:
 	- Imagen: `httpd:2.4` (configuración en `stack02/apache/httpd.conf`).
 	- Función: reverse-proxy hacia `wildfly` en `http://wildfly:8080` y `phpldapadmin` en `http://phpldapadmin:80`.
-	- Puertos: `80` expuesto en el host.
+	- Puertos: `80` (HTTP) y `443` (HTTPS) expuestos en el host.
+	- SSL: certificados autofirmados en `stack02/apache/certs/`.
 
 - `wildfly`:
 	- Build: `./wildfly` (`stack02/wildfly/Dockerfile`).
 	- Versión: WildFly 11.0.0.Final sobre Java 11 (Eclipse Temurin).
-	- Puertos: `8080` (app) y `9990` (management).
+	- Puertos: `8080` (HTTP), `8443` (HTTPS) y `9990` (management).
+	- SSL: keystore en `stack02/wildfly/certs/wildfly.keystore`.
 	- Volumen: `wildfly_data` montado en `/opt/wildfly/standalone` para persistencia de configuración/temporal/logs.
     - Credenciales (por defecto) para entrar en la consola de administración (management): `admin` / `Admin.1234`.
 
@@ -100,6 +107,61 @@ Ejemplos de uso (ejecutar desde `stack02`):
 ```
 
 Estas utilidades facilitan el flujo de trabajo local
+
+## Configuración SSL/HTTPS
+
+Apache y WildFly están configurados para aceptar conexiones HTTPS además de HTTP usando certificados autofirmados.
+
+### Certificados SSL para Apache
+
+Los certificados para Apache se generan con OpenSSL y se almacenan en `apache/certs/`:
+
+```bash
+cd apache/certs
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+  -keyout server.key \
+  -out server.crt \
+  -subj "/C=ES/ST=Madrid/L=Madrid/O=Stack02/OU=IT/CN=localhost"
+```
+
+Esto genera:
+- `server.key`: Clave privada
+- `server.crt`: Certificado público
+
+### Keystore para WildFly
+
+El keystore para WildFly se genera con `keytool` (incluido en el JDK) y se almacena en `wildfly/certs/`:
+
+```bash
+cd wildfly/certs
+keytool -genkeypair -alias wildfly -keyalg RSA -keysize 2048 \
+  -validity 365 -keystore wildfly.keystore \
+  -storepass password -keypass password \
+  -dname "CN=localhost, OU=IT, O=Stack02, L=Madrid, ST=Madrid, C=ES"
+```
+
+Esto genera:
+- `wildfly.keystore`: Keystore JKS con el certificado y clave privada
+- Contraseña del keystore: `password`
+
+**Nota importante**: Los certificados autofirmados son válidos para desarrollo local. El navegador mostrará advertencias de seguridad que puedes aceptar. Para producción, debes usar certificados firmados por una CA reconocida.
+
+### Regenerar certificados
+
+Si necesitas regenerar los certificados (por ejemplo, si han expirado):
+
+1. Elimina los certificados existentes:
+   ```bash
+   rm apache/certs/*
+   rm wildfly/certs/*
+   ```
+
+2. Ejecuta los comandos anteriores para generar nuevos certificados
+
+3. Reconstruye y reinicia los servicios:
+   ```bash
+   ./rebuild.sh
+   ```
 
 ## Notas
 
