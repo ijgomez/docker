@@ -28,9 +28,9 @@ if [ ! -f "$CA_DIR/ca.key" ] || [ ! -f "$CA_DIR/ca.crt" ]; then
         -sha256 -days 3650 -out "$CA_DIR/ca.crt" \
         -subj "/C=ES/ST=Madrid/L=Madrid/O=Stack02 Dev/OU=IT/CN=Stack02 Local CA"
     
-    echo "✅ CA generada en $CA_DIR/"
+    echo " CA generada en $CA_DIR/"
     echo ""
-    echo "⚠️  IMPORTANTE: Debes importar la CA en tu navegador:"
+    echo "  IMPORTANTE: Debes importar la CA en tu navegador:"
     echo "   Archivo: $CA_DIR/ca.crt"
     echo ""
     echo "   Chrome/Edge:"
@@ -45,7 +45,7 @@ if [ ! -f "$CA_DIR/ca.key" ] || [ ! -f "$CA_DIR/ca.crt" ]; then
     echo "     sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain $CA_DIR/ca.crt"
     echo ""
 else
-    echo "✅ CA ya existe en $CA_DIR/"
+    echo " CA ya existe en $CA_DIR/"
 fi
 
 echo ""
@@ -82,7 +82,7 @@ IP.2 = ::1
 EOF
 
 # Generar certificados para Apache
-echo "🔐 Generando certificados para Apache..."
+echo " Generando certificados para Apache..."
 cd "$SCRIPT_DIR/apache/certs"
 
 # Generar clave privada
@@ -99,12 +99,12 @@ openssl x509 -req -in server.csr -CA "$CA_DIR/ca.crt" -CAkey "$CA_DIR/ca.key" \
 # Limpiar CSR
 rm server.csr
 
-echo "✅ Certificados de Apache generados"
+echo " Certificados de Apache generados"
 cd "$SCRIPT_DIR"
 echo ""
 
 # Generar certificados para Wildfly
-echo "🔐 Generando keystore para Wildfly..."
+echo " Generando keystore para Wildfly..."
 cd "$SCRIPT_DIR/wildfly/certs"
 
 # Generar clave privada
@@ -132,14 +132,14 @@ keytool -importkeystore \
 # Limpiar archivos temporales
 rm wildfly.p12 wildfly.key wildfly.crt wildfly.csr
 
-echo "✅ Keystore de Wildfly generado"
+echo " Keystore de Wildfly generado"
 cd "$SCRIPT_DIR"
 echo ""
 
 echo "=========================================="
-echo "✅ Certificados generados exitosamente"
+echo " Certificados generados exitosamente"
 echo ""
-echo "⚠️  IMPORTANTE: Debes importar la CA en tu navegador:"
+echo "  IMPORTANTE: Debes importar la CA en tu navegador:"
 echo "   Archivo: $CA_DIR/ca.crt"
 echo ""
 echo "Para aplicar los cambios:"

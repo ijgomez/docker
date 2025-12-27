@@ -10,7 +10,7 @@ echo ""
 
 # Verificar si mkcert está instalado
 if ! command -v mkcert &> /dev/null; then
-    echo "❌ mkcert no está instalado"
+    echo " mkcert no está instalado"
     echo ""
     echo "Para instalar mkcert:"
     echo "  - macOS:   brew install mkcert"
@@ -21,24 +21,24 @@ if ! command -v mkcert &> /dev/null; then
     exit 1
 fi
 
-echo "✅ mkcert encontrado"
+echo " mkcert encontrado"
 echo ""
 
 # Instalar la CA local si no existe
-echo "📋 Verificando CA local..."
+echo " Verificando CA local..."
 mkcert -install
 echo ""
 
 # Generar certificados para Apache
-echo "🔐 Generando certificados para Apache..."
+echo " Generando certificados para Apache..."
 cd apache/certs
 mkcert -key-file server.key -cert-file server.crt localhost 127.0.0.1 ::1
-echo "✅ Certificados de Apache generados en apache/certs/"
+echo " Certificados de Apache generados en apache/certs/"
 cd ../..
 echo ""
 
 # Generar certificados para Wildfly
-echo "🔐 Generando keystore para Wildfly..."
+echo " Generando keystore para Wildfly..."
 cd wildfly/certs
 
 # Primero generar certificados PEM con mkcert
@@ -58,12 +58,12 @@ keytool -importkeystore \
 # Limpiar archivos temporales
 rm wildfly.p12 wildfly.key wildfly.crt
 
-echo "✅ Keystore de Wildfly generado en wildfly/certs/"
+echo " Keystore de Wildfly generado en wildfly/certs/"
 cd ../..
 echo ""
 
 echo "=========================================="
-echo "✅ Certificados confiables generados exitosamente"
+echo " Certificados confiables generados exitosamente"
 echo ""
 echo "Los certificados son válidos para:"
 echo "  - localhost"
